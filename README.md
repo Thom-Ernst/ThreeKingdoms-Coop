@@ -108,8 +108,8 @@ To build an installer, install Inno Setup 6 and use Windows PowerShell 5.1 or
 PowerShell 7. The build also uses Windows' .NET Framework 4 compiler:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.1.0 -WorkshopItemId 3816463449
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.1.0 -Variant Debug -WorkshopItemId 3816463449
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.9.0 -WorkshopItemId 3816463449
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.9.0 -Variant Debug -WorkshopItemId 3816463449
 ```
 
 The Debug command requires the DLL produced by `runtime\build.bat all` or

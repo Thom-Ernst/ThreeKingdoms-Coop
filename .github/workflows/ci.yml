@@ -9,7 +9,7 @@ on:
     inputs:
       version:
         description: Installer version for a test build (does not create a release)
-        default: '0.1.0-ci'
+        default: '0.9.0-ci'
         required: true
         type: string
 
@@ -37,8 +37,8 @@ jobs:
           INPUT_VERSION: ${{ inputs.version }}
           WORKSHOP_ITEM_ID: ${{ vars.WORKSHOP_ITEM_ID }}
         run: |
-          $version = if ($env:GITHUB_REF.StartsWith('refs/tags/v')) { $env:GITHUB_REF_NAME.Substring(1) } elseif ($env:INPUT_VERSION) { $env:INPUT_VERSION } else { '0.1.0-ci' }
-          if ($version -notmatch '^\d+\.\d+\.\d+(?:[.-][A-Za-z0-9.-]+)?$') { throw 'Use a version such as 0.1.0 or 0.1.0-rc.1.' }
+          $version = if ($env:GITHUB_REF.StartsWith('refs/tags/v')) { $env:GITHUB_REF_NAME.Substring(1) } elseif ($env:INPUT_VERSION) { $env:INPUT_VERSION } else { '0.9.0-ci' }
+          if ($version -notmatch '^\d+\.\d+\.\d+(?:[.-][A-Za-z0-9.-]+)?$') { throw 'Use a version such as 0.9.0 or 0.9.0-rc.1.' }
           if ($env:WORKSHOP_ITEM_ID -and $env:WORKSHOP_ITEM_ID -notmatch '^\d+$') { throw 'WORKSHOP_ITEM_ID must be numeric.' }
           if ($env:GITHUB_REF.StartsWith('refs/tags/') -and -not $env:WORKSHOP_ITEM_ID) { throw 'Set the WORKSHOP_ITEM_ID repository variable before tagging a release.' }
           "BUILD_VERSION=$version" >> $env:GITHUB_ENV

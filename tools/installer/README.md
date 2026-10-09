@@ -51,10 +51,10 @@ history before trying again.
 ## Offline build and verification
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.1.0
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.1.0 -Variant Debug
-pwsh -NoProfile -File tools/installer/Test-Installer.ps1 -Installer out/installer/TW3K-Coop-Setup-0.1.0.exe -OtherInstaller out/installer/TW3K-Coop-Setup-0.1.0-debug.exe
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Test-Installer.ps1 -Installer out/installer/TW3K-Coop-Setup-0.1.0-debug.exe -OtherInstaller out/installer/TW3K-Coop-Setup-0.1.0.exe
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.9.0
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.9.0 -Variant Debug
+pwsh -NoProfile -File tools/installer/Test-Installer.ps1 -Installer out/installer/TW3K-Coop-Setup-0.9.0.exe -OtherInstaller out/installer/TW3K-Coop-Setup-0.9.0-debug.exe
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Test-Installer.ps1 -Installer out/installer/TW3K-Coop-Setup-0.9.0-debug.exe -OtherInstaller out/installer/TW3K-Coop-Setup-0.9.0.exe
 ```
 
 Pass `-WorkshopItemId 3816463449` to link the project's Workshop item; CI reads

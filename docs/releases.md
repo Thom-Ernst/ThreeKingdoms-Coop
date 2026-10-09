@@ -7,8 +7,8 @@ Windows PowerShell 5.1. Build assets and test logs are retained for 14 days.
 CI does not launch the game, build the Workshop pack or contact a test rig.
 
 Use **Actions > Windows build and installers > Run workflow** to make a test
-build. Supply a version such as `0.1.0-rc.1`. Manual runs create workflow
-artifacts, not GitHub releases. The default branch build version is `0.1.0-ci`.
+build. Supply a version such as `0.9.0-rc.1`. Manual runs create workflow
+artifacts, not GitHub releases. The default branch build version is `0.9.0-ci`.
 
 ## Prepare a release
 
@@ -26,11 +26,11 @@ artifacts, not GitHub releases. The default branch build version is `0.1.0-ci`.
 4. Tag the reviewed public commit and push just that tag:
 
    ```text
-   git tag v0.1.0
-   git push origin v0.1.0
+   git tag v0.9.0
+   git push origin v0.9.0
    ```
 
-   Use a new version for each release. `v0.1.0-rc.1` is also accepted. Tags
+   Use a new version for each release. `v0.9.0-rc.1` is also accepted. Tags
    without a configured Workshop item ID fail before packaging.
 5. The tag workflow repeats the builds and tests, then creates a **draft**
    GitHub Release with player and developer installers, their build manifests,

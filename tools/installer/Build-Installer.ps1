@@ -12,12 +12,12 @@
     Output is derived build data; do not commit it. Reproducible means the same documented inputs
     and build command; Inno/.NET timestamp fields do not promise byte-identical EXEs.
 .EXAMPLE
-    powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.1.0
+    powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.9.0
 #>
 #Requires -Version 5.1
 [CmdletBinding()]
 param(
-    [ValidatePattern('^\d+\.\d+\.\d+(?:[.-][A-Za-z0-9.-]+)?$')][string]$Version = '0.1.0',
+    [ValidatePattern('^\d+\.\d+\.\d+(?:[.-][A-Za-z0-9.-]+)?$')][string]$Version = '0.9.0',
     [ValidateSet('Release', 'Debug')][string]$Variant = 'Release',
     [string]$DllPath,
     [ValidatePattern('^(?:[0-9]+)?$')][string]$WorkshopItemId = '',
