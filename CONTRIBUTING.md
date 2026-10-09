@@ -12,9 +12,10 @@ evidence first. Good starting tasks include clarifying build instructions,
 improving an error message, reducing a bug to a repeatable case, or adding a
 synthetic regression for a reported failure.
 
-The unresolved fourth-player join crash and blocked campaign dilemmas need
-investigation, but do not assume that changing a player-count constant fixes
-them. Follow the state through the relevant lobby, session or campaign path.
+Extra-player lobby and campaign behavior crosses several engine paths; changing
+a player-count constant alone is rarely enough. For a reported regression,
+follow the state through the relevant lobby, session or campaign path and check
+which existing fixes are active in that build.
 
 ## Submit a pull request
 

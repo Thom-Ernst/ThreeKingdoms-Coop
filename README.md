@@ -7,9 +7,9 @@
 Play a Total War: THREE KINGDOMS campaign with more than two players.
 
 This experimental mod combines a runtime DLL with a UI pack to extend the game's
-multiplayer lobby and support additional human factions. Three-player campaigns
-and battle unit lending have been tested. Four-player support is a work in
-progress: a fourth player can still crash on joining.
+multiplayer lobby and support cooperative campaigns with up to four players,
+including battle unit lending. The runtime includes extra-player lobby crash
+protections and fixes for event starvation beyond the vanilla two-player limit.
 
 The current target is the **Windows Steam version of THREE KINGDOMS 1.7.2**.
 Game updates can invalidate the runtime hooks. Every player needs the same
@@ -42,14 +42,16 @@ close the game and launcher and run Setup again. Remove the DLL component throug
 Windows **Apps & features > Three Kingdoms Coop**. Manage the Workshop pack through
 Steam and the launcher. See the [installer guide](tools/installer/README.md).
 
-## Current limitations and bug reports
+## Status and bug reports
 
 This is experimental multiplayer code. A successful lobby join does not prove
 that every campaign or battle path works with extra players.
 
-- The fourth-player join crash is unresolved.
-- Hidden or unpresented dilemmas can leave a campaign turn blocked.
-- Compatibility with other mods has not been established for every combination.
+Four-player campaigns have been exercised, and the event-starvation fix has been
+confirmed across all four seats. Compatibility with other mods has not been
+established for every combination. If a join fails or a decision blocks a turn,
+report it against the current build with the steps and logs below so a new
+failure can be distinguished from an older issue.
 
 To report a problem, open an issue with the game version, installer version,
 number of players, host/client role, enabled mods, and steps to reproduce it.
