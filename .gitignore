@@ -1,0 +1,17 @@
+*.dll
+*.exe
+*.obj
+*.pdb
+*.lib
+*.exp
+*.ilk
+*.pack
+*.dmp
+*.log
+__pycache__/
+runtime/src/build_info.h
+runtime/tests/output/
+mods/*/extracted/
+mods/*/assets/
+mods/*/build*/
+out/

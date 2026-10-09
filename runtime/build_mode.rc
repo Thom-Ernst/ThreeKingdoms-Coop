@@ -1,0 +1,29 @@
+#include <windows.h>
+#include "src/build_mode.h"
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
+ FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef TW3K_RELEASE
+ FILEFLAGS 0
+#else
+ FILEFLAGS VS_FF_DEBUG
+#endif
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_DLL
+BEGIN
+ BLOCK "StringFileInfo"
+ BEGIN
+  BLOCK "040904B0"
+  BEGIN
+   VALUE "FileDescription", "Three Kingdoms Co-op " TW3K_BUILD_MODE "\0"
+   VALUE "ProductName", "Three Kingdoms Co-op\0"
+   VALUE "FileVersion", "1.0.0 " TW3K_BUILD_MODE "\0"
+   VALUE "BuildMode", TW3K_BUILD_MODE "\0"
+  END
+ END
+ BLOCK "VarFileInfo"
+ BEGIN
+  VALUE "Translation", 0x0409, 1200
+ END
+END

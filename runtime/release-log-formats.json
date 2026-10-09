@@ -1,0 +1,710 @@
+[
+  {
+    "file": "battle.cpp",
+    "format": "HUD ctor: embedded object at self+8 unreadable — leaving everything alone"
+  },
+  {
+    "file": "battle.cpp",
+    "format": "   !! VirtualProtect failed for %s (%lu) - NOT modified"
+  },
+  {
+    "file": "battle.cpp",
+    "format": "   !! VirtualProtect failed for +0x11 (%lu) - NOT modified"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: already installed"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: bad stolen length %zu"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: target %016llX unreadable"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: SIGNATURE MISMATCH at byte %zu (want %02X got %02X) — refusing to hook"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: VirtualAlloc failed, err=%lu"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: VirtualProtect failed, err=%lu"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: INSTALLED at %016llX (trampoline=%016llX)"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: already installed"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: thunk %016llX unreadable"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: %016llX is not a JMP rel32 (first byte %02X) — refusing to patch. The thunk has moved or this build differs."
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: no page available within 2GB of %016llX — cannot reach it with a rel32."
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: stub landed %lld bytes away, out of rel32 range"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: VirtualProtect failed, err=%lu"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: INSTALLED — thunk %016llX now reaches our stub at %016llX; the real implementation is %016llX (read out of the instruction, not typed)."
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: already installed"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: bad steal length %zu (need 5..%zu)"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: entry %016llX unreadable"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: SIGNATURE MISMATCH at byte %zu (want %02X got %02X) — refusing to hook. The function moved or this build differs; re-derive it rather than forcing this."
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: no page available within 2GB of %016llX — cannot reach it with a rel32."
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: stub landed %lld bytes away, out of rel32 range"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: VirtualProtect failed, err=%lu"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: INSTALLED at %016llX (stole %zu bytes; stub=%016llX, trampoline=%016llX — the trampoline IS the original, so the hook calls it and not the patched entry)."
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: REMOVE FAILED (VirtualProtect error=%lu); hook remains active; restart required"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: REMOVE INCOMPLETE (cache=%d protection=%d); retaining active state for retry; restart required"
+  },
+  {
+    "file": "detour.cpp",
+    "format": "%s: removed (original prologue restored)"
+  },
+  {
+    "file": "eventcursor.cpp",
+    "format": "event-manager lifetime: null-check signature mismatch — NOT installed"
+  },
+  {
+    "file": "eventcursor.cpp",
+    "format": "EVENT CURSOR: side table full; manager=%016llX faction=%016llX. Collection will rescan from zero."
+  },
+  {
+    "file": "eventcursor.cpp",
+    "format": "event-cursor gate: %016llX unreadable — NOT patched"
+  },
+  {
+    "file": "eventcursor.cpp",
+    "format": "event-cursor gate: SIGNATURE MISMATCH at byte %zu (want %02X got %02X) — refusing"
+  },
+  {
+    "file": "eventcursor.cpp",
+    "format": "event-cursor gate: VirtualProtect failed, err=%lu — NOT patched"
+  },
+  {
+    "file": "eventcursor.cpp",
+    "format": "event-cursor gate: RVA %08llX  %02X -> %02X (index limit 2 -> %u). Inert until something raises humanFactionCount past 2."
+  },
+  {
+    "file": "eventcursor.cpp",
+    "format": "campaign: human count %u -> %u (automatic count hold)"
+  },
+  {
+    "file": "feedicon.cpp",
+    "format": "feed icon guard: VirtualProtect failed, err=%lu — NOT patched"
+  },
+  {
+    "file": "feedicon.cpp",
+    "format": "feed icon guard: %016llX unreadable — NOT patched"
+  },
+  {
+    "file": "feedicon.cpp",
+    "format": "feed icon guard: SIGNATURE MISMATCH at byte %zu (want %02X got %02X) — refusing"
+  },
+  {
+    "file": "feedicon.cpp",
+    "format": "feed icon guard: the branch target %016llX does not start with the expected MOV RAX,[R12] — refusing. Nothing was written."
+  },
+  {
+    "file": "feedicon.cpp",
+    "format": ">>> #69 FEED ICON GUARD: ARMED. RVA %08llX, 17 bytes reordered so the IconPath getter null-checks its source item BEFORE dereferencing the property bag. Branch target %016llX unchanged and verified. An entry with no item now renders the generic icon, which is what the engine's own null path does."
+  },
+  {
+    "file": "feedicon.cpp",
+    "format": "feed icon guard: restored — the vanilla instruction order is back, crash included."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "  gift target: mode struct unreadable — leaving vanilla behaviour"
+  },
+  {
+    "file": "gift.cpp",
+    "format": "  gift target: FAULTED while arming — falling back to vanilla for this click"
+  },
+  {
+    "file": "gift.cpp",
+    "format": "  !!! NO GIFT COMMAND WAS ISSUED — the handler matched none of the %u selected unit(s) in the searched unit list, so nothing was sent and nothing can arrive. The failure is in FUN_142EA8580's lookup, NOT in targeting or the receiver. (The RETURN source was %s, so this is no longer the run-09:50 case where the wrong player's list was searched — check the units really are held HERE.)"
+  },
+  {
+    "file": "gift.cpp",
+    "format": "  !! gift target: FAILED TO RESTORE the vtable at %016llX — expect instability"
+  },
+  {
+    "file": "gift.cpp",
+    "format": "   ⇒ REFUSED: player %d has no seat in the +0x137C table, so there is no slot to address. The payload target is a SLOT index and an unowned one destroys the units, so nothing is sent. (#45)"
+  },
+  {
+    "file": "gift.cpp",
+    "format": "   !! the gift handler faulted — restoring state and carrying on"
+  },
+  {
+    "file": "gift.cpp",
+    "format": "🔴 RECIPIENTS: localPlayerId() returned %d — no seat, so this machine cannot identify itself and SELF-EXCLUSION IS OFF. One of the buttons below may gift to YOU. (Expected only when the MP session has not been captured yet.)"
+  },
+  {
+    "file": "gift.cpp",
+    "format": "   ⚠ %d further live recipient(s) cannot be offered: the pack ships %d buttons. Nobody is silently dropped from the count — this line IS the count being honest."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "gift name: building the fallback name for player %d faulted — leaving the label alone, which renders blank."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "      !! the value accessor faulted."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "★★★ GiftUnits (#%ld): the argument could not be read — NOTHING GIFTED."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "★★★ GiftUnits(%d) (#%ld): NOT a button position (expected 0-%d) — nothing gifted."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "CCO RESOLVER: faulted reading the wanted name — returning not-found, as the engine already had."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "CCO QUERY HIJACK: cannot read the slot at RVA_%08llX — NOT hijacking. The panel will be visible for the whole battle, as it was before."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "CCO QUERY HIJACK: VirtualProtect failed (%lu) — NOT hijacking."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "CCO QUERY HIJACK: the write did not stick — entry 63 left as found."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "FIX gift panel query: fallback installed"
+  },
+  {
+    "file": "gift.cpp",
+    "format": "CCO QUERY HIJACK: FAULTED at stage \"%s\" (code %08lX). Entry 63 is untouched and the gift itself is unaffected."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "CCO HIJACK: cannot even read the slot at RVA_%08llX — NOT hijacking."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "CCO HIJACK: VirtualProtect failed (%lu) — NOT hijacking."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "CCO HIJACK: the write did not stick — table left as found."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "FIX gift action: fallback installed"
+  },
+  {
+    "file": "gift.cpp",
+    "format": "CCO HIJACK: FAULTED at stage \"%s\" (code %08lX). The table is untouched."
+  },
+  {
+    "file": "gift.cpp",
+    "format": "CCO restore failed at RVA_%08llX; retaining active state; restart required"
+  },
+  {
+    "file": "gift.cpp",
+    "format": "CCO protection restore failed; retaining active state; restart required"
+  },
+  {
+    "file": "gift.cpp",
+    "format": "CCO restore faulted; retaining active state and DLL; restart required"
+  },
+  {
+    "file": "lobby.cpp",
+    "format": "SET FACTION: service vtable unreadable — aborting"
+  },
+  {
+    "file": "lobby.cpp",
+    "format": "SET FACTION: FAULTED while sending — nothing applied"
+  },
+  {
+    "file": "lobby.cpp",
+    "format": "PLAYER NAME (late build): building the wide CA string for player %d FAULTED — the button falls back to \"Player %d\"."
+  },
+  {
+    "file": "lobby.cpp",
+    "format": "★★★ LOBBY PLAYER id=%u IS PAST THE %u THIS MOD SUPPORTS. Panels are built for ids 0..3 and auto-faction ignores anything above 3, so this player has no panel and cannot be given one. This is the shape of B4."
+  },
+  {
+    "file": "lobby.cpp",
+    "format": "lobby lifetime: constructed generation=%llu lobby=%016llX; recovery budgets reset"
+  },
+  {
+    "file": "lobby_factions.cpp",
+    "format": "S21 fresh groups: record update faulted; next notification/tick will retry"
+  },
+  {
+    "file": "lobby_factions.cpp",
+    "format": "S17 fresh factions: native record enumerator unavailable; refusing fix"
+  },
+  {
+    "file": "lobby_factions.cpp",
+    "format": "S21 fresh records: accepted-state reconciliation armed; duplicate ready-mask filter unavailable (native 0xCD duplicate refusal retained)"
+  },
+  {
+    "file": "main.cpp",
+    "format": "ALL SIGNATURES MATCHED — this machine's game build is the one we analysed."
+  },
+  {
+    "file": "main.cpp",
+    "format": "SIGNATURES NOT READY: %d unreadable, %d mismatched. EXPECTED if the game has not reached the main menu yet — waiting up to %d s, re-checking every %d ms. Hooks are installed below, once the bytes are actually there, so injecting early no longer means running un-hooked."
+  },
+  {
+    "file": "main.cpp",
+    "format": "ALL SIGNATURES MATCHED — this machine's game build is the one we analysed. (ready after %d s of waiting — injection timing did not matter)"
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! GAVE UP WAITING after %d s. Final state of every site:"
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! SIGNATURE MISMATCH — this machine's build DIFFERS. Send me the log; do not test here."
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! SIGNATURES NEVER APPEARED (%d unreadable, %d mismatched) — either the game never reached the main menu, or this build decrypts these sites differently. Send me the log; do not trust this machine's results."
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! BUILD CHECK: e_lfanew at %016llX is UNREADABLE — the running image's PE headers cannot be read, so which build this is cannot be established. Refusing to hook anything: an unverifiable build is treated exactly like a wrong one."
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! BUILD CHECK: e_lfanew reads %08X, which is not a plausible PE header offset. The image at %016llX is not shaped like the game. Refusing to hook anything."
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! BUILD CHECK: PE signature at %016llX is UNREADABLE. Refusing to hook anything."
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! BUILD CHECK: %016llX holds %08X, not a PE signature (want 00004550). Whatever this process's main module is, it is not the binary these RVAs describe. Refusing to hook anything."
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! BUILD CHECK: TimeDateStamp at %016llX is UNREADABLE. Refusing to hook anything."
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! BUILD CHECK: optional header magic at %016llX is UNREADABLE. Refusing to hook anything."
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! BUILD CHECK: optional header magic is %04X, not 020B (PE32+). This is not the 64-bit game image, and SizeOfImage would not even be where we are about to look. Refusing to hook anything."
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! BUILD CHECK: SizeOfImage at %016llX is UNREADABLE. Refusing to hook anything."
+  },
+  {
+    "file": "main.cpp",
+    "format": "BUILD FINGERPRINT OK: SizeOfImage %08X (%u bytes), TimeDateStamp %08X — this is 1.7.2, the build every RVA in offsets.h was derived from. The addresses below are being applied to the binary they were read out of."
+  },
+  {
+    "file": "main.cpp",
+    "format": "################ WRONG GAME BUILD — REFUSING TO HOOK ANYTHING ################"
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! OBSERVED: SizeOfImage %08X (%u bytes)   TimeDateStamp %08X   image base %016llX"
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! EXPECTED: SizeOfImage %08X (%u bytes)   TimeDateStamp %08X   = 1.7.2"
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! THIS IS 1.7.1 — the PRE-UPDATE build, matched exactly on both fields. This DLL's addresses were rebased to 1.7.2 on 2026-09-17, so on this binary every one of them points at something else. UPDATE THIS MACHINE TO 1.7.2; do not force the DLL onto 1.7.1. (The usual causes: a rollback, an older Steam depot, or the one PC on the rig that has not taken the update yet — check the others before blaming the mod.)"
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! If 1.7.1 genuinely has to be played, check out the DLL from BEFORE the rebase rather than running this one. The RVAs are the difference, not the build date."
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! ONE FIELD MATCHES 1.7.1 (SizeOfImage %08X / TimeDateStamp %08X) and the other does not — 1.7.1-shaped, but not the 1.7.1 these numbers were read from. A hotfix, or a depot in between. Treat it as UNRECOGNISED: the RVAs have to be re-derived against THIS binary rather than forced onto it."
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! SAME SIZE AS 1.7.2 BUT A DIFFERENT TimeDateStamp — a rebuild or hotfix PAST the build these RVAs were derived from. The same size is not the same code: re-derive the offsets against this binary and update this fingerprint with them. Do NOT widen the check to SizeOfImage alone to make this pass."
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! UNRECOGNISED BUILD — neither 1.7.2 nor 1.7.1 (1.7.1 is SizeOfImage %08X, TimeDateStamp %08X). RE-DERIVE the RVAs against this binary rather than forcing this DLL onto it: most of them have no signature behind them, so on the wrong build they read — and in places write — whatever happens to live at those addresses. Re-run the Ghidra rebase, then record the new fingerprint beside the new offsets."
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! Nothing has been hooked and no game byte has been written. Compare the BUILD: and SOURCE: lines above across all machines, then send me this log."
+  },
+  {
+    "file": "main.cpp",
+    "format": "##############################################################################"
+  },
+  {
+    "file": "main.cpp",
+    "format": "==== tw3k_coop attached ===="
+  },
+  {
+    "file": "main.cpp",
+    "format": "BUILD MODE: %s"
+  },
+  {
+    "file": "main.cpp",
+    "format": "BUILD: %s %s   <-- must MATCH on all machines; if not, that PC ran a stale DLL"
+  },
+  {
+    "file": "main.cpp",
+    "format": "SOURCE: %s   <-- the branch and commit this DLL was built from"
+  },
+  {
+    "file": "main.cpp",
+    "format": "MACHINE: %s"
+  },
+  {
+    "file": "main.cpp",
+    "format": "LOG FILE: %s   (unique per machine+run — just copy it, no renaming needed)"
+  },
+  {
+    "file": "main.cpp",
+    "format": "B4 save-lobby: hook=%s armed=%s"
+  },
+  {
+    "file": "main.cpp",
+    "format": "B4 leave-cache: hook=%s fix=%s"
+  },
+  {
+    "file": "main.cpp",
+    "format": "HUD ctor hook: installed (automatic spectator lending)"
+  },
+  {
+    "file": "main.cpp",
+    "format": "HUD ctor hook: NOT installed — the participant-HUD experiment is unavailable, but everything else on this machine is unaffected."
+  },
+  {
+    "file": "main.cpp",
+    "format": "   >>> and ARMED automatically. Nothing to type; it applies from the next battle."
+  },
+  {
+    "file": "main.cpp",
+    "format": "   ⚠ could NOT be armed automatically: %s"
+  },
+  {
+    "file": "main.cpp",
+    "format": "⚠ Telestration probe: NOT installed — #47/#50 cannot be measured on this client."
+  },
+  {
+    "file": "main.cpp",
+    "format": "⚠ #69 feed icon guard: NOT applied — this client keeps the vanilla crash. Harmless unless an event-feed entry is presented with an empty feed, which is exactly the 2026-08-14 signature."
+  },
+  {
+    "file": "main.cpp",
+    "format": "⚠⚠ #13 side gate: NOT applied — above two humans this client will put its spectators on the ATTACKER's side, and it now DISAGREES with any client that did apply it. Do not play a 3+ player session on this build until every local log shows the patch applied."
+  },
+  {
+    "file": "main.cpp",
+    "format": "Campaign tick hook: installed — maintains the human-faction count hold."
+  },
+  {
+    "file": "main.cpp",
+    "format": "Campaign tick hook: NOT installed — count hold cannot run. Do not use this client for a 3+ human campaign."
+  },
+  {
+    "file": "main.cpp",
+    "format": "Event-cursor hooks: installed (write + read + gate byte). Inert until humanFactionCount passes 2 — cursor storage is maintained automatically."
+  },
+  {
+    "file": "main.cpp",
+    "format": ">>> #63 COUNT HOLD: ARMED AUTOMATICALLY. A 3rd/4th player's events are collected with nobody arming anything. It raises humanFactionCount only to the number of registered human factions, never beyond, never lowers it, and is a no-op below three humans. — every machine or none, exactly as before. <<<"
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! #63 COUNT HOLD: could NOT auto-arm — %s. ⚠ A 3rd or 4th player on this machine will lose every event, and this client's count will differ from the others'. Do not run a 3-player campaign against this build; send me this log."
+  },
+  {
+    "file": "main.cpp",
+    "format": "Event-cursor hooks: NOT installed — ⚠ this machine must NOT take part in a 3-player campaign, since a 3rd human's end turn would write over the list size at +0x1F8."
+  },
+  {
+    "file": "main.cpp",
+    "format": ">>> All ten core lobby/gift hooks active. Campaign maintenance and blending report separately. <<<"
+  },
+  {
+    "file": "main.cpp",
+    "format": "!! NOT ALL HOOKS INSTALLED (guard=%d mp=%d join=%d seat=%d panel=%d slotch=%d tick=%d reset=%d share=%d tree=%d) — send me this log, do not rely on this machine's results"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "B4 leave-cache: exact leave CALL SIGNATURE MISMATCH; refusing hook"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "panel expansion: cache init FAULTED — expansion disabled"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "panel expansion: panel_player3/4 NOT FOUND — is mod/tw3k_coop.pack installed? (running unmodified, nothing changed)"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "B4 panel display: ready-handler signature=%s repair=%s"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "panel expansion: REFUSED id=%u — %s (records=%u cap=%u); stale callback not used"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "S21 faction display refused: engine dropdown-event guard unreadable"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "panel expansion: slot %u has NO MPCampaignPlayer callback on panel %016llX — pack widget is missing the callback declaration"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "panel expansion: slot %u CANNOT init — groupData=%016llX rec=%016llX (recCount=%u) — panel will stay blank"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "panel expansion: could not write callback+0x70 for slot %u"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "panel expansion: slot %u REFUSING the display call — cb+0x78 (group data) is NULL, so FUN_142D6DA20 would read address 0x8 and kill this client. The panel exists but was never populated, which is what a save lobby leaves behind. The panel stays hidden instead, which is B4's symptom without the crash."
+  },
+  {
+    "file": "panels.cpp",
+    "format": "panel expansion: slot %u FUN_142D7B410 FAULTED — dropdowns left as they were"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "panel expansion: FAULTED on slot %u panel work — slot left undisplayed (safe)"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "B9 GUARD: REFUSED — %s node=%016llX depth=%d visits=%u refusals=%ld"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "★★★ B9 GUARD: REFUSED a widget-tree walk — node=%016llX is not a plausible pointer.\n    This is the B9 crash, caught. The engine would have read its child count at +0x124 and faulted (14057BD22).\n    Returning 0 = \"not found\": the lookup fails, the widget stays unresolved, the process lives. refusals=%ld"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "B9 GUARD: REFUSED — candidate vector unreadable/invalid at %016llX refusals=%ld"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "★★★ B9 GUARD: REFUSED — node=%016llX is plausible but its child count/array at +0x124/+0x128 could not be read. refusals=%ld"
+  },
+  {
+    "file": "panels.cpp",
+    "format": "★★★ B9 GUARD: REFUSED — node=%016llX claims %u children at array=%016llX.\n    ★ THIS NAMES THE CULPRIT, which is what #12 has been asking for: the parent whose child list is corrupt, rather than the register dump of whoever followed it. The engine would have faulted at 14057BD41.\n    (4096 is a sanity bound, not a measured maximum — if a legitimate widget ever exceeds it this line is the evidence, and the bound is what to change.)\n    refusals=%ld"
+  },
+  {
+    "file": "saveload.cpp",
+    "format": "S16 save START refused: a saved human faction is unseated or roster unreadable; ready reason=team_has_no_players"
+  },
+  {
+    "file": "saveload.cpp",
+    "format": "S16 save readiness: roster adds no blocking reason"
+  },
+  {
+    "file": "saveload.cpp",
+    "format": "B4 save-lobby: record-writer ENTRY SIGNATURE MISMATCH; refusing hook"
+  },
+  {
+    "file": "saveload.cpp",
+    "format": "B4 save-lobby: record-writer CALL SIGNATURE MISMATCH; refusing hook"
+  },
+  {
+    "file": "saveload.cpp",
+    "format": "S17 fresh factions: native record writer faulted; refusing further refreshes"
+  },
+  {
+    "file": "saveload.cpp",
+    "format": "B4 save-lobby: records %u -> %u from seated service ids; saved factions retained"
+  },
+  {
+    "file": "session.cpp",
+    "format": "  add open slot FAULTED — disabling auto-expand for this lobby"
+  },
+  {
+    "file": "session.cpp",
+    "format": ">>> AUTO-EXPAND DONE: slot entries %u -> %u"
+  },
+  {
+    "file": "session.cpp",
+    "format": ">>> JOIN: raised advertised player slots 2 -> %ld"
+  },
+  {
+    "file": "session.cpp",
+    "format": "join: write to desc+0x58 FAULTED — leaving as-is"
+  },
+  {
+    "file": "session.cpp",
+    "format": "seat: mask write FAULTED at slot %u — stock order for this one"
+  },
+  {
+    "file": "session.cpp",
+    "format": "seat: restore FAULTED at slot %u (flags left masked!)"
+  },
+  {
+    "file": "session.cpp",
+    "format": "!! seat: NO FREE SLOT for player (flags=%08X team=%u spectator=%u) among %u slots — this client will disconnect itself and report being kicked"
+  },
+  {
+    "file": "session.cpp",
+    "format": "seat: player (flags=%08X team=%u) -> slot %u of %u%s"
+  },
+  {
+    "file": "sidegate.cpp",
+    "format": "#13 side gate: VirtualProtect failed, err=%lu - NOT patched"
+  },
+  {
+    "file": "sidegate.cpp",
+    "format": "#13 side gate: %016llX unreadable - NOT patched"
+  },
+  {
+    "file": "sidegate.cpp",
+    "format": "#13 side gate: SIGNATURE MISMATCH at byte %zu (want %02X got %02X) - refusing. The game has probably been updated; re-derive the site rather than forcing anything."
+  },
+  {
+    "file": "sidegate.cpp",
+    "format": "#13 side gate: the branch target %016llX does not begin with MOV R9B,1 - refusing. Nothing was written."
+  },
+  {
+    "file": "sidegate.cpp",
+    "format": ">>> #13/B10 BYSTANDER SIDE GATE: ARMED. RVA %08llX, one byte (JNZ -> JB), so the battle descriptor's `humans == 2` test becomes `humans >= 2`. A player with no army in the fight is now given the HUMAN participant's army instead of armies[0], which is the attacker."
+  },
+  {
+    "file": "sidegate.cpp",
+    "format": "    At exactly two humans this changes NOTHING - neither JNZ nor JB is taken when EDI==2, so a 2-player game runs byte-for-byte vanilla. ⚠ EVERY MACHINE OR NONE: a client without this patch disagrees with the others about who owns which army. Check the local logs."
+  },
+  {
+    "file": "sidegate.cpp",
+    "format": "#13 side gate: restored - above two humans, spectators go back to the attacker's side."
+  },
+  {
+    "file": "telestration.cpp",
+    "format": "  ⚠ #47/#50 fix: this client's own key %016llX could not be placed."
+  },
+  {
+    "file": "telestration.cpp",
+    "format": "  ⚠⚠ #47/#50 fix: FAULTED and was caught. The insert path is wrong somewhere — treat this switch as retired until that is understood, and read the roster line above for how far it got."
+  },
+  {
+    "file": "telestration.cpp",
+    "format": ">>> #47/#50 TELESTRATION FIX: %s. It applies at the NEXT battle — the participant set is decided once, at construction, and nothing re-reads it."
+  },
+  {
+    "file": "turnblend.cpp",
+    "format": "blend: could not make site %zu/%zu writable, err=%lu — no code bytes changed"
+  },
+  {
+    "file": "turnblend.cpp",
+    "format": "blend: instruction-cache flush FAILED at site %zu, err=%lu"
+  },
+  {
+    "file": "turnblend.cpp",
+    "format": "blend: protection restore FAILED at site %zu, err=%lu"
+  },
+  {
+    "file": "turnblend.cpp",
+    "format": "turn blend: SIGNATURE MISMATCH at %016llX (%s): rel=%d reaches neither FUN_142F6BFA0 nor FUN_142F6BF80 — nothing written. All %zu sites are checked before any is patched."
+  },
+  {
+    "file": "turnblend.cpp",
+    "format": "turn blend: FAILED (%s); inspect the local log before continuing"
+  },
+  {
+    "file": "turnblend.cpp",
+    "format": "turn blend: %s — %zu call sites now reach \"%s\". "
+  },
+  {
+    "file": "turnblend.cpp",
+    "format": "refresh blend: cannot read %016llX (%s) — nothing written"
+  },
+  {
+    "file": "turnblend.cpp",
+    "format": "refresh blend: SIGNATURE MISMATCH at %016llX (%s) — nothing written. All %zu sites are checked before any is patched, so the table cannot be half-applied."
+  },
+  {
+    "file": "turnblend.cpp",
+    "format": "refresh blend: FAILED (%s); inspect the local log before continuing"
+  },
+  {
+    "file": "turnblend.cpp",
+    "format": "refresh blend: %s — %zu of %zu UI event emitters now fire out of turn"
+  },
+  {
+    "file": "turnblend.cpp",
+    "format": ">>> TURN BLENDING: ARMED AUTOMATICALLY%s. Buildings, character skill points, army stance, assignments and court posts are usable during ANOTHER PLAYER's turn, and the panels update in place. The AI sweep is untouched. This machine uses automatic blending."
+  },
+  {
+    "file": "turnblend.cpp",
+    "format": "!! TURN BLENDING: partial arm — gate=%s refresh=%s. See the lines above."
+  },
+  {
+    "file": "turnblend.cpp",
+    "format": "!! TURN BLENDING: gave up auto-arming after %d s — its sites never read as vanilla. Either this machine's game build differs, or those pages never decrypted. Everything else on this machine is unaffected; inspect the local log."
+  }
+]
