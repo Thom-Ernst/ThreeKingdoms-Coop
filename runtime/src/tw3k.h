@@ -442,6 +442,13 @@ void reportFeedGate();
 bool installFactionInListHook();
 void removeFactionInListHook();
 void reportFactionInList();
+using NextAutoOpenFn = void (*)(void* self, void* sink);
+using NextAutoOpenObserver = void (*)(void* self, void* sink, NextAutoOpenFn original);
+// Production owner; optional diagnostic wrapper receives the scoped original callback.
+bool installEventReadHook();
+void removeEventReadHook();
+bool eventReadInstalled();
+void setNextAutoOpenObserver(NextAutoOpenObserver observer);
 bool installNextAutoOpenHook();
 void removeNextAutoOpenHook();
 void reportNextAutoOpen();

@@ -884,6 +884,10 @@ static DWORD WINAPI probeThread(LPVOID)
              "on the ATTACKER's side, and it now DISAGREES with any client that did apply it. Do "
              TW3K_MODE_TEXT("not play a 3+ player session on this build until `ping` shows the patch everywhere.", "not play a 3+ player session on this build until every local log shows the patch applied."));
 
+    // Production #56 containment belongs outside release-excluded diagnostic blocks.
+    if (!installEventReadHook())
+        logf("Event read containment NOT installed; native reopening behavior retained");
+
     // Install maintenance before arming any feature that depends on the campaign tick.
     if (installCampaignTickHook())
         logf(TW3K_MODE_TEXT("Campaign tick hook: installed — drains `answer` and maintains the human-faction ", "Campaign tick hook: installed — maintains the human-faction ")
@@ -1196,6 +1200,7 @@ static DWORD WINAPI probeThread(LPVOID)
             // Panic is listed too, so the two paths
             // cannot drift.
             removeHumanFactionLoadHook();
+            removeEventReadHook();
             removeFeedTickHook(); removeNextAutoOpenHook(); removeFactionInListHook();
             removeFeedGateHook();       // ⚠ was called NOWHERE until 2026-08-17 — see the detach tail
             removeCampaignTickHook();
@@ -1342,6 +1347,7 @@ static DWORD WINAPI probeThread(LPVOID)
 #ifndef TW3K_RELEASE
     removeFeedTickHook();
 #endif
+    removeEventReadHook();
 #ifndef TW3K_RELEASE
     removeNextAutoOpenHook();
 #endif

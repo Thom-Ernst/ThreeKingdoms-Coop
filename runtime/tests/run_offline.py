@@ -18,4 +18,8 @@ for name in ('test_ui', 'test_lobby_panels', 'test_savelobby_watch'):
 for name in ('test_audit.py', 'test_audit_lifecycle.py'):
     subprocess.run([sys.executable, str(runtime / 'tests' / name), str(out)],
                    cwd=runtime, check=True)
-print('ok all offline runtime regressions')
+for mode in ([], ['--release']):
+    subprocess.run([sys.executable, str(runtime / 'tests/test_eventread.py'),
+                    str(out / ('eventread-release' if mode else 'eventread-debug')), *mode],
+                   cwd=runtime, check=True)
+print('ok all offline runtime regressions, including event-read containment in both modes')

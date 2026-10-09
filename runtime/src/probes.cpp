@@ -2575,25 +2575,8 @@ static void noteFeedListSample(void* self, const char* where)
     }
 }
 
-// 14 bytes = 5 whole instructions, ending on the `LEA RBP,[R11-0x258]` boundary. None RIP-relative.
-//
-// ⚠ The steal INCLUDES `MOV R11,RSP`, and the body past it still writes `MOV [R11+0x8],RBX` and
-// `MOV [R11+0x18],R12` — it expects R11 to hold the RSP this invocation was entered with. That is
-// fine here precisely because the trampoline re-executes `MOV R11,RSP` at its own entry, so R11
-// describes the frame the call actually has; and the `FF 25` jump clobbers nothing on the way. This
-// is the register the 2026-07-29 crash was bought with, so it is spelled out rather than assumed.
-static constexpr size_t AUTOOPEN_STOLEN_LEN = 14;
-static const uint8_t EXPECT_NEXT_AUTO_OPEN[AUTOOPEN_STOLEN_LEN] = {
-    0x4C, 0x8B, 0xDC,                           // MOV R11, RSP
-    0x55,                                       // PUSH RBP
-    0x56,                                       // PUSH RSI
-    0x41, 0x57,                                 // PUSH R15
-    0x49, 0x8D, 0xAB, 0xA8, 0xFD, 0xFF, 0xFF,   // LEA RBP, [R11-0x258]
-};
-
-typedef void (*NextAutoOpenFn)(void* self, void* sink);
-static NextAutoOpenFn g_origNextAutoOpen = nullptr;
-static Detour         g_autoOpenDetour;
+// The production eventread module owns the detour; this module only observes its callback.
+static bool g_autoOpenObserverRegistered = false;
 
 static volatile long g_aoCalls     = 0;
 static volatile long g_aoNoTurn    = 0;   // refused at the inlined turn guard
@@ -2972,7 +2955,7 @@ bool markFeedDirty(char* why, size_t cap)
     return true;
 }
 
-static void nextAutoOpenHook(void* self, void* sink)
+static void nextAutoOpenHook(void* self, void* sink, NextAutoOpenFn original)
 {
     InterlockedIncrement(&g_aoCalls);
     g_aoLastSelf = (uintptr_t)self;
@@ -2982,7 +2965,7 @@ static void nextAutoOpenHook(void* self, void* sink)
     const bool okB    = readAt((uintptr_t)self + OFF_AO_ACCEPTED, before);
     const bool okTurn = feedTurnIds(&curId, &myId);
 
-    if (g_origNextAutoOpen) g_origNextAutoOpen(self, sink);
+    if (original) original(self, sink);
 
     const bool okA = readAt((uintptr_t)self + OFF_AO_ACCEPTED, after);
     noteFeedListSample(self, "listener exit");
@@ -3025,9 +3008,9 @@ static void nextAutoOpenHook(void* self, void* sink)
                 // that can actually answer it.
                 logf("   ★★★ the recompute's SOURCE holds %u entr%s at %016llX, and NOTHING WAS "
                      "ACCEPTED. ⇒ the list was not empty, so this is a refusal rather than an absent "
-                     "event — but WHERE it refused is not visible from here. `feed`'s exclusion "
-                     "counter distinguishes 'never reached the test' from 'reached it and was "
-                     "excluded'.", n, n == 1 ? "y" : "ies", (unsigned long long)d);
+                     "event — but WHERE it refused is not visible from here. With #56 containment "
+                     "installed, the shared-leaf probe cannot observe this routed IsRead call.",
+                     n, n == 1 ? "y" : "ies", (unsigned long long)d);
                 for (uint32_t i = 0; i < n && i < 8; ++i) {
                     uint64_t w0 = 0, w1 = 0;
                     readAt(d + (uintptr_t)i * COLL_STRIDE, w0);
@@ -3172,9 +3155,17 @@ void removeFactionInListHook() { detourRemove(g_filDetour, "auto-open exclusion 
 
 void reportFactionInList()
 {
+    if (eventReadInstalled())
+        logf("  #56 routes the auto-open CALL through a helper: this leaf probe's return-address "
+             "filter misses it; zero calls means UNOBSERVED, not absent candidates.");
     logf("---- AUTO-OPEN EXCLUSION TEST (B1: is MY faction on the record's list?) ----");
     if (!g_filDetour.active) { logf("  hook NOT installed on this machine."); return; }
     logf("  calls from the walk=%ld  |  answered EXCLUDED=%ld", g_filCalls, g_filExcluded);
+    if (eventReadInstalled()) {
+        logf("  The counts above cover unrouted observations only; current auto-open eligibility "
+             "cannot be inferred from this return-address-filtered probe.");
+        return;
+    }
     if (g_filCalls == 0)
         logf("  ⇒ the walk never reached this test. Either it had no candidate event at all, or it "
              "refused earlier — `feed`'s listener split says which, and that is a DIFFERENT finding "
@@ -3337,17 +3328,21 @@ void reportFeedGate()
 
 bool installNextAutoOpenHook()
 {
-    return detourInstall(g_autoOpenDetour, g_base + RVA_NEXT_AUTO_OPEN, AUTOOPEN_STOLEN_LEN,
-                         EXPECT_NEXT_AUTO_OPEN, (uintptr_t)&nextAutoOpenHook,
-                         (void**)&g_origNextAutoOpen, "auto-open listener");
+    if (!eventReadInstalled()) return false;
+    setNextAutoOpenObserver(&nextAutoOpenHook);
+    g_autoOpenObserverRegistered = true;
+    return true;
 }
 
-void removeNextAutoOpenHook() { detourRemove(g_autoOpenDetour, "auto-open listener"); }
+void removeNextAutoOpenHook() {
+    setNextAutoOpenObserver(nullptr);
+    g_autoOpenObserverRegistered = false;
+}
 
 void reportNextAutoOpen()
 {
     logf("---- AUTO-OPEN LISTENER (B1: did the box get ASKED for, and did anything answer?) ----");
-    if (!g_autoOpenDetour.active) { logf("  hook NOT installed on this machine."); return; }
+    if (!g_autoOpenObserverRegistered || !eventReadInstalled()) { logf("  hook NOT installed on this machine."); return; }
     logf("  calls=%ld  |  refused-at-turn-guard=%ld  accepted-nothing=%ld  produced=%ld",
          g_aoCalls, g_aoNoTurn, g_aoEmpty, g_aoProduced);
 

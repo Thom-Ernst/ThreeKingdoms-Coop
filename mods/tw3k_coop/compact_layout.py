@@ -65,6 +65,13 @@ def compact_layout(source):
         # Keep the previous left edge on BOTH sides. Narrowing then moves each
         # centred character 50px left, rather than moving right panels right.
         width(edit(find('gradient')), ART_WIDTH)
+        if right:
+            # The vanilla right card also has a dark character overlay. It is
+            # a child of the holder, but has its own 514px state and 604px image:
+            # narrowing the holder does not constrain this artwork. The inner
+            # right card can therefore shade an adjacent seat after it empties.
+            # Match both widths to the card; preserve its vertical fade/opacity.
+            width(edit(find('character_overlay')), ART_WIDTH)
         ink = edit(find('ink_right' if right else 'ink_left'))
         width(ink, ART_WIDTH + 10)
         ink.set('offset', f'{256 - ART_WIDTH - 5 - TRIM if right else -5:.2f},-516.00')

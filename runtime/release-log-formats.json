@@ -140,6 +140,22 @@
     "format": "campaign: human count %u -> %u (automatic count hold)"
   },
   {
+    "file": "eventread.cpp",
+    "format": "Event read containment: signature mismatch/unreadable; refusing installation"
+  },
+  {
+    "file": "eventread.cpp",
+    "format": "Event read containment installed"
+  },
+  {
+    "file": "eventread.cpp",
+    "format": "Event read call removal refused: bytes no longer owned; restart required"
+  },
+  {
+    "file": "eventread.cpp",
+    "format": "Event read scope removal refused: bytes no longer owned; restart required"
+  },
+  {
     "file": "feedicon.cpp",
     "format": "feed icon guard: VirtualProtect failed, err=%lu — NOT patched"
   },
@@ -458,6 +474,10 @@
   {
     "file": "main.cpp",
     "format": "⚠⚠ #13 side gate: NOT applied — above two humans this client will put its spectators on the ATTACKER's side, and it now DISAGREES with any client that did apply it. Do not play a 3+ player session on this build until every local log shows the patch applied."
+  },
+  {
+    "file": "main.cpp",
+    "format": "Event read containment NOT installed; native reopening behavior retained"
   },
   {
     "file": "main.cpp",

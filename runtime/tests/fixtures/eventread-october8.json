@@ -1,0 +1,233 @@
+{
+  "feed": "0x292d6b22780",
+  "manager": "0x292a4c841d0",
+  "faction": "0x292af7e07e0",
+  "current_identity_word": 123,
+  "human_registry": [
+    {
+      "index": 0,
+      "faction": "0x293796ed500",
+      "id": 6
+    },
+    {
+      "index": 1,
+      "faction": "0x292b70f75e0",
+      "id": 11
+    },
+    {
+      "index": 2,
+      "faction": "0x292af7e07e0",
+      "id": 4
+    },
+    {
+      "index": 3,
+      "faction": "0x2929cec3ca0",
+      "id": 2
+    }
+  ],
+  "accepted_copies": [
+    {
+      "address": "0x292c5ba9980",
+      "control": "0x292c5ba9970",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [
+        "0x292af7e07e0"
+      ],
+      "dismissed_by": [],
+      "mine_read": true,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x292b7e62a90",
+      "control": "0x292b7e62a80",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x292a5bbf720",
+      "control": "0x292a5bbf710",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x292ac405f80",
+      "control": "0x292ac405f70",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x292b90f5db0",
+      "control": "0x292b90f5da0",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x2925e4e5850",
+      "control": "0x2925e4e5840",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x292bd6d2850",
+      "control": "0x292bd6d2840",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x2925e796170",
+      "control": "0x2925e796160",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x292b790ffa0",
+      "control": "0x292b790ff90",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x29275080550",
+      "control": "0x29275080540",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x292afdde1e0",
+      "control": "0x292afdde1d0",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x29228e2bb00",
+      "control": "0x29228e2baf0",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x292b7781c00",
+      "control": "0x292b7781bf0",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x292c8e78fe0",
+      "control": "0x292c8e78fd0",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x292b0bebda0",
+      "control": "0x292b0bebd90",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x292b8e41ec0",
+      "control": "0x292b8e41eb0",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x292baa5cdb0",
+      "control": "0x292baa5cda0",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x2921f900c90",
+      "control": "0x2921f900c80",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x292ab438740",
+      "control": "0x292ab438730",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    },
+    {
+      "address": "0x2920f4d9f20",
+      "control": "0x2920f4d9f10",
+      "identity_word": 123,
+      "event_index": 4427,
+      "read_by": [],
+      "dismissed_by": [],
+      "mine_read": false,
+      "mine_dismissed": false
+    }
+  ],
+  "provenance": "Offline October 8 dump replay; shared control pointers independently checked directly against captured +B0 pairs on 2026-10-09."
+}

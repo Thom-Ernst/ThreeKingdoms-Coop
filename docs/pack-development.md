@@ -26,8 +26,9 @@ pwsh -File mods/tw3k_coop/Build-IconTextures.ps1
 The lobby generator applies `compact_layout.py` and writes the authored
 `localisation/difficulty_tooltip.loc.tsv` into `build/text/db/`. The live battle
 generator applies `style_panel.py` automatically. No copying between mod folders
-is needed. Run battle UI tests with `python mods/tw3k_coop/test_style_panel.py`;
-these require the local battle XML.
+is needed. Run lobby UI tests with `python mods/tw3k_coop/test_compact_layout.py`
+and battle UI tests with `python mods/tw3k_coop/test_style_panel.py`; these require
+their respective local XML inputs.
 
 With an RPFM Server running locally, build the combined pack:
 
