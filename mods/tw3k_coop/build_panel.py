@@ -17,7 +17,7 @@ widget — so this whole file can be deleted without a DLL rebuild.
 
 WHY A SCRIPT AND NOT HAND-EDITED XML
     twui.xml is a GUID-keyed hierarchy of 28,758 lines, and this repo's own history says clone
-    rather than author (see mods/coop_4player_ui/dupe_panels.py, and the four twui facts in
+    rather than author (see mods/tw3k_coop/dupe_panels.py, and the four twui facts in
     wiki/packs-and-ui.md). Everything below is a pure INSERTION — one block before </hud_battle>
     and one before </components> — so no existing byte is touched and the diff is reviewable.
 

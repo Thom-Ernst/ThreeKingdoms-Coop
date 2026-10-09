@@ -131,7 +131,7 @@ Runtime development and offline tests do not require rebuilding the pack.
 | `runtime/src/build_mode.h`, `runtime/release-log-formats.json` | Release/debug boundaries and player log formats. |
 | `runtime/tests/` | Synthetic runtime regressions. |
 | `runtime/proxy/` | DLL forwarder that loads the runtime at game startup. |
-| `mods/coop_4player_ui/`, `mods/coop_gift_panel/` | UI and art generators. |
+| `mods/tw3k_coop/` | The single Workshop mod: lobby, battle UI and art generators, plus tooltip text. |
 | `tools/installer/` | Installer, transaction helper, local developer client and fixture tests. |
 | `docs/pack-development.md` | Building the Workshop pack from local game inputs. |
 

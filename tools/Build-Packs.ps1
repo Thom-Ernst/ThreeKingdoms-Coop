@@ -18,7 +18,7 @@
 
     Source layout, resolved in this order:
 
-      mods\<name>\build\   a tree produced by that mod's own generator (coop_4player_ui)
+      mods\<name>\build\   a tree produced by that mod's own generator (tw3k_coop)
       mods\<name>\src\     an explicit source root
       mods\<name>\         top-level in-pack folders directly: script\, db\, text\, ui\, ...
 
