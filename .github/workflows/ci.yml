@@ -1,0 +1,151 @@
+name: Windows build and installers
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Installer version for a test build (does not create a release)
+        default: '0.1.0-ci'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Select version and Workshop item
+        shell: pwsh
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          WORKSHOP_ITEM_ID: ${{ vars.WORKSHOP_ITEM_ID }}
+        run: |
+          $version = if ($env:GITHUB_REF.StartsWith('refs/tags/v')) { $env:GITHUB_REF_NAME.Substring(1) } elseif ($env:INPUT_VERSION) { $env:INPUT_VERSION } else { '0.1.0-ci' }
+          if ($version -notmatch '^\d+\.\d+\.\d+(?:[.-][A-Za-z0-9.-]+)?$') { throw 'Use a version such as 0.1.0 or 0.1.0-rc.1.' }
+          if ($env:WORKSHOP_ITEM_ID -and $env:WORKSHOP_ITEM_ID -notmatch '^\d+$') { throw 'WORKSHOP_ITEM_ID must be numeric.' }
+          if ($env:GITHUB_REF.StartsWith('refs/tags/') -and -not $env:WORKSHOP_ITEM_ID) { throw 'Set the WORKSHOP_ITEM_ID repository variable before tagging a release.' }
+          "BUILD_VERSION=$version" >> $env:GITHUB_ENV
+      - name: Build both runtime modes, proxy and offline regressions
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do call "%%i\VC\Auxiliary\Build\vcvars64.bat"
+          if errorlevel 1 exit /b 1
+          call runtime\build.bat all
+          if errorlevel 1 exit /b 1
+          cd /d "%GITHUB_WORKSPACE%"
+          call runtime\build.bat test
+          if errorlevel 1 exit /b 1
+      - uses: ./.github/actions/inno
+      - name: Build both installers and source archive
+        shell: pwsh
+        env:
+          WORKSHOP_ITEM_ID: ${{ vars.WORKSHOP_ITEM_ID }}
+        run: |
+          $workshop = @{}
+          if ($env:WORKSHOP_ITEM_ID) { $workshop.WorkshopItemId = $env:WORKSHOP_ITEM_ID }
+          & tools/installer/Build-Installer.ps1 -Version $env:BUILD_VERSION @workshop
+          if ($LASTEXITCODE -ne 0) { throw 'Release installer build failed.' }
+          & tools/installer/Build-Installer.ps1 -Version $env:BUILD_VERSION -Variant Debug @workshop
+          if ($LASTEXITCODE -ne 0) { throw 'Debug installer build failed.' }
+          git archive --format=zip --output="out/installer/TW3K-Coop-Source-$env:BUILD_VERSION.zip" HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Source archive failed.' }
+          $files = Get-ChildItem out/installer -File | Where-Object { $_.Extension -in '.exe', '.zip', '.json' }
+          $lines = foreach ($file in ($files | Sort-Object Name)) { "{0}  {1}" -f (Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $file.Name }
+          $lines | Set-Content out/installer/SHA256SUMS.txt -Encoding ascii
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: installer-build
+          path: out/installer/
+          if-no-files-found: error
+          retention-days: 14
+
+  installer-tests:
+    needs: build
+    runs-on: windows-2022
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shell: [pwsh, powershell]
+        variant: [Release, Debug]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: installer-build
+          path: out/installer
+      - uses: ./.github/actions/inno
+      - name: Install, upgrade, repair, rollback and uninstall fixtures
+        shell: pwsh
+        env:
+          PRIMARY_VARIANT: ${{ matrix.variant }}
+          TEST_SHELL: ${{ matrix.shell }}
+        run: |
+          $manifests = @(Get-ChildItem out/installer -Filter '*.hashes.json' | ForEach-Object { Get-Content $_.FullName -Raw | ConvertFrom-Json })
+          $primary = $manifests | Where-Object variant -eq $env:PRIMARY_VARIANT
+          $other = $manifests | Where-Object variant -ne $env:PRIMARY_VARIANT
+          & $env:TEST_SHELL -NoProfile -ExecutionPolicy Bypass -File tools/installer/Test-Installer.ps1 -Installer (Join-Path out/installer $primary.installer) -OtherInstaller (Join-Path out/installer $other.installer) -ResultDir out/installer-tests
+          if ($LASTEXITCODE -ne 0) { throw 'Installer fixture suite failed.' }
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: installer-logs-${{ matrix.shell }}-${{ matrix.variant }}
+          path: out/installer-tests/
+          if-no-files-found: warn
+          retention-days: 14
+
+  draft-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, installer-tests]
+    runs-on: windows-2022
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: installer-build
+          path: out/installer
+      - name: Create or update the draft from the tested build
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_REPO: ${{ github.repository }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          $existing = gh release view $tag --repo $env:RELEASE_REPO --json isDraft 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            if (-not ($existing | ConvertFrom-Json).isDraft) { throw 'This release is published; its assets will not be replaced.' }
+            $assets = @(Get-ChildItem out/installer -File | ForEach-Object FullName)
+            gh release upload $tag @assets --repo $env:RELEASE_REPO --clobber
+          } else {
+            @'
+          Experimental THREE KINGDOMS 1.7.2 co-op build.
+
+          Install the player Setup EXE and enable the matching tw3k_coop Workshop pack on every participant. The debug EXE is for developer diagnostics. Source and SHA256 checksums are included.
+
+          Before publishing: add the Workshop link, describe changes and known issues, and confirm the live multiplayer and Steam repair/uninstall checks for this version. Offline runtime and installer fixtures have passed in CI.
+          '@ | Set-Content release-notes.md
+            $assets = @(Get-ChildItem out/installer -File | ForEach-Object FullName)
+            gh release create $tag @assets --repo $env:RELEASE_REPO --verify-tag --draft --title "Three Kingdoms Coop $tag" --notes-file release-notes.md
+          }
+          if ($LASTEXITCODE -ne 0) { throw 'Draft release upload failed.' }

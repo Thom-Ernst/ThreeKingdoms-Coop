@@ -1,5 +1,9 @@
 # Three Kingdoms Coop
 
+[![CI](https://github.com/Thom-Ernst/ThreeKingdoms-Coop/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Thom-Ernst/ThreeKingdoms-Coop/actions/workflows/ci.yml)
+[![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
+[![Support on Ko-fi](https://img.shields.io/badge/Ko--fi-support%20development-FF5E5B.svg?logo=ko-fi&logoColor=white)](https://ko-fi.com/mister_fordo)
+
 Play a Total War: THREE KINGDOMS campaign with more than two players.
 
 This experimental mod combines a runtime DLL with a UI pack to extend the game's
@@ -11,10 +15,15 @@ The current target is the **Windows Steam version of THREE KINGDOMS 1.7.2**.
 Game updates can invalidate the runtime hooks. Every player needs the same
 runtime build and UI pack version.
 
+If you would like to support development, you can do so on
+[Ko-fi](https://ko-fi.com/mister_fordo). Contributions and playtest reports are
+welcome too.
+
 ## Install and play
 
 The mod has two required parts: the **DLL installer from this repository's
-Releases section** and the **`tw3k_coop` pack from Steam Workshop**. Subscribing
+[Releases section](https://github.com/Thom-Ernst/ThreeKingdoms-Coop/releases)** and
+the **`tw3k_coop` pack from Steam Workshop**. Subscribing
 to the Workshop item alone does not enable additional players.
 
 1. Close THREE KINGDOMS and the Creative Assembly launcher.
@@ -133,3 +142,6 @@ those notes are not build dependencies.
 
 Project source is licensed under **GPL-3.0-only**. See [LICENSE](LICENSE).
 The source repository excludes game assets and generated packs.
+
+Maintainers: see [releases and CI](docs/releases.md) for test artifacts, the
+Workshop item configuration and the version-tag draft release workflow.
