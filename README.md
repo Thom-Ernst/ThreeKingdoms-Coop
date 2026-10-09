@@ -23,19 +23,20 @@ welcome too.
 
 The mod has two required parts: the **DLL installer from this repository's
 [Releases section](https://github.com/Thom-Ernst/ThreeKingdoms-Coop/releases)** and
-the **`tw3k_coop` pack from Steam Workshop**. Subscribing
+the **[`tw3k_coop` pack from Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3816463449)**. Subscribing
 to the Workshop item alone does not enable additional players.
 
 1. Close THREE KINGDOMS and the Creative Assembly launcher.
 2. Run `TW3K-Coop-Setup-<version>.exe` and select your game folder. Setup searches
    Steam libraries; find the folder through Steam's **Manage > Browse local files**.
-3. Subscribe to `tw3k_coop` in Steam Workshop.
+3. Subscribe to [`tw3k_coop` in Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3816463449).
 4. Start the launcher and enable `tw3k_coop` under **Mods**.
 5. Have every participant install matching versions, then create or join a
    cooperative campaign lobby.
 
-The first public release and Workshop item are being prepared. Download links
-will be added when they are available.
+The first public installer release is being prepared. The Workshop item has
+been created and is currently hidden while release preparation continues; it
+may be inaccessible until its visibility changes.
 
 If a Steam update or **Verify integrity of game files** stops the mod loading,
 close the game and launcher and run Setup again. Remove the DLL component through
@@ -103,8 +104,8 @@ To build an installer, install Inno Setup 6 and use Windows PowerShell 5.1 or
 PowerShell 7. The build also uses Windows' .NET Framework 4 compiler:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.1.0
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.1.0 -Variant Debug
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.1.0 -WorkshopItemId 3816463449
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Build-Installer.ps1 -Version 0.1.0 -Variant Debug -WorkshopItemId 3816463449
 ```
 
 The Debug command requires the DLL produced by `runtime\build.bat all` or

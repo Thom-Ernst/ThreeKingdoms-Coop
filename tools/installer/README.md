@@ -6,8 +6,9 @@ folder. If several installations exist, choose yours; if none is found, use
 Steam > right-click THREE KINGDOMS > Manage > Browse local files. The chosen
 folder must contain `Three_Kingdoms.exe`. Close both the game and CA launcher.
 
-The installer provides the DLL side. **Subscribe to `tw3k_coop` in Steam
-Workshop**, then start the game's launcher, tick `tw3k_coop` under **Mods**, and
+The installer provides the DLL side. **Subscribe to
+[`tw3k_coop` in Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3816463449)**,
+then start the game's launcher, tick `tw3k_coop` under **Mods**, and
 play. If the release includes a Workshop item ID, Setup offers its Workshop page
 and reports whether that item is already downloaded in the game's Steam library.
 Without an ID, it displays the subscription instructions without a link.
@@ -56,7 +57,9 @@ pwsh -NoProfile -File tools/installer/Test-Installer.ps1 -Installer out/installe
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/installer/Test-Installer.ps1 -Installer out/installer/TW3K-Coop-Setup-0.1.0-debug.exe -OtherInstaller out/installer/TW3K-Coop-Setup-0.1.0.exe
 ```
 
-Optionally pass `-WorkshopItemId` with the published item ID. Build requires Inno Setup 6
+Pass `-WorkshopItemId 3816463449` to link the project's Workshop item; CI reads
+the same ID from the `WORKSHOP_ITEM_ID` repository variable. The item is currently
+hidden while release preparation continues. Build requires Inno Setup 6
 (`-ISCC` overrides its compiler path) and Windows' .NET Framework 4 compiler.
 `-Variant` defaults to `Release`. `-DllPath` defaults to `runtime/tw3k_coop.dll`
 for Release and `runtime/tw3k_coop_debug.dll` for Debug. An explicit path must

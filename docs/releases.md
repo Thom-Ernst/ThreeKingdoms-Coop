@@ -16,6 +16,9 @@ artifacts, not GitHub releases. The default branch build version is `0.1.0-ci`.
 2. Upload the matching pack to Workshop. Set the repository Actions variable
    `WORKSHOP_ITEM_ID` to its numeric item ID under **Settings > Secrets and
    variables > Actions > Variables**. It is public configuration, not a secret.
+   The current item is [3816463449](https://steamcommunity.com/sharedfiles/filedetails/?id=3816463449),
+   and the repository variable is configured. The item is hidden during release
+   preparation; make it accessible to players when the public release is ready.
 3. Validate the intended build in a live multiplayer session. Check the changed
    paths, a subsequent turn or transition, and save/reload where relevant. Also
    check Steam integrity/repair, an upgrade from the old zip install, and
