@@ -38,9 +38,9 @@ to the Workshop item alone does not enable additional players.
 5. Have every participant install matching versions, then create or join a
    cooperative campaign lobby.
 
-The first public installer release is being prepared. The Workshop item has
-been created and is currently hidden while release preparation continues; it
-may be inaccessible until its visibility changes.
+The [installer release is available](https://github.com/Thom-Ernst/ThreeKingdoms-Coop/releases/latest).
+The Workshop item is currently hidden; your account needs access to download
+the UI pack until its visibility changes.
 
 If a Steam update or **Verify integrity of game files** stops the mod loading,
 close the game and launcher and run Setup again. Remove the DLL component through
