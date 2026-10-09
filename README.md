@@ -8,7 +8,11 @@ Play a Total War: THREE KINGDOMS campaign with more than two players.
 
 This experimental mod combines a runtime DLL with a UI pack to extend the game's
 multiplayer lobby and support cooperative campaigns with up to four players,
-including battle unit lending. The runtime includes extra-player lobby crash
+including battle unit lending and **turn blending for partially simultaneous
+turns**. You can manage buildings, character skill points, army stances,
+assignments and court posts while another human player takes their turn.
+Movement, attacks and ending your turn still follow the normal turn order;
+the AI turn phase remains unchanged. The runtime includes extra-player lobby crash
 protections and fixes for event starvation beyond the vanilla two-player limit.
 
 The current target is the **Windows Steam version of THREE KINGDOMS 1.7.2**.
