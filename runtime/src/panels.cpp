@@ -930,9 +930,17 @@ void removePanelHook() { detourRemove(g_panelDetour, "panel probe"); }
 //     crashed five times" when the game ran on for forty minutes. A guard whose normal operation
 //     manufactures crash-looking log entries is a bad guard.
 // ⇒ An implausible node still needs no engine-memory dereference. S20 additionally
-// bounds depth/work and detects active-chain cycles in BOTH builds. Accepted nodes
-// validate the complete candidate/child array spans, so hot-path VirtualQuery cost
-// must be checked in the next live run; a plausible base alone was insufficient.
+// bounds depth and detects active-chain cycles in BOTH builds. Accepted nodes
+// validate the complete candidate/child array spans; a plausible base alone was insufficient.
+//
+// ★★ S23 (2026-10-12): THIS IS THE ENGINE'S GENERAL FIND-CHILD-BY-NAME, NOT A LOBBY PATH.
+// FUN_1405611E0 has 400+ call sites across every UI. S20's two costs landed on all of them:
+//   * an 8192-node per-walk budget. The reforms tree is bigger than that, so every lookup past
+//     node 8192 came back "not found" and the hovered reform was never shown;
+//   * three to five VirtualQuery calls per node, which made every menu open hang 1-2 s.
+// ⇒ No work budget: a tree walk is finite, and cycles/depth are what can make it not be.
+// ⇒ Spans are checked against a per-walk cache of committed regions, so one VirtualQuery
+//   covers the whole heap region a subtree lives in. The cache is dropped at every root call.
 //
 // ⚠ DELIBERATELY NOT DONE: a vtable test for "is this really a widget". B8's probe saw
 // `0x1437FDE20` on three widgets, and whether that covers every widget type in a panel subtree is
@@ -998,8 +1006,39 @@ static inline bool plausibleNode(uintptr_t p)
 static constexpr int B9_MAX_DEPTH = 96;
 static thread_local uintptr_t t_walkChain[B9_MAX_DEPTH] = { 0 };
 static thread_local int       t_walkDepth = 0;
-static thread_local uint32_t  t_walkVisits = 0;
-static constexpr uint32_t B9_MAX_VISITS = 8192;
+static thread_local uint32_t  t_walkVisits = 0;   // reported only; S23 removed the budget
+
+// Committed, readable regions already proven during THIS root walk. The walk runs synchronously
+// on one thread over a tree that thread is not mutating, so a region proven at the start of the
+// walk is still mapped at its end; dropping the cache at every root keeps that window one walk.
+struct WalkSpan { uintptr_t lo, hi; };
+static constexpr int B9_SPAN_CACHE = 8;
+static thread_local WalkSpan t_walkSpans[B9_SPAN_CACHE] = {};
+static thread_local int      t_walkSpanCount = 0, t_walkSpanNext = 0;
+
+static bool readableSpan(uintptr_t at, size_t len)
+{
+    if (!len) return true;
+    if (at < 0x10000 || at > 0x00007FFFFFFFFFFFULL - len) return false;
+    const uintptr_t end = at + len;
+    for (int i = 0; i < t_walkSpanCount; ++i)
+        if (at >= t_walkSpans[i].lo && end <= t_walkSpans[i].hi) return true;
+    while (at < end) {
+        MEMORY_BASIC_INFORMATION mbi{};
+        if (!VirtualQuery((void*)at, &mbi, sizeof(mbi)) || mbi.State != MEM_COMMIT ||
+            (mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD)) ||
+            !(mbi.Protect & (PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY |
+                            PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY)))
+            return false;
+        const uintptr_t lo = (uintptr_t)mbi.BaseAddress, next = lo + mbi.RegionSize;
+        if (next <= at) return false;
+        t_walkSpans[t_walkSpanNext] = { lo, next };
+        t_walkSpanNext = (t_walkSpanNext + 1) % B9_SPAN_CACHE;
+        if (t_walkSpanCount < B9_SPAN_CACHE) ++t_walkSpanCount;
+        at = next;
+    }
+    return true;
+}
 
 // Check the ENTIRE span before handing an array to the unguarded engine loop.
 // A plausible base alone does not prove that count*8 bytes remain mapped.
@@ -1007,19 +1046,15 @@ static bool readableWalkArray(uintptr_t array, uint32_t count)
 {
     if (!count) return true;
     if (count > 4096 || !plausibleNode(array)) return false;
-    const uintptr_t end = array + (uintptr_t)count * sizeof(uintptr_t);
-    while (array < end) {
-        MEMORY_BASIC_INFORMATION mbi{};
-        if (!VirtualQuery((void*)array, &mbi, sizeof(mbi)) || mbi.State != MEM_COMMIT ||
-            (mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD)) ||
-            !(mbi.Protect & (PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY |
-                            PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY)))
-            return false;
-        const uintptr_t next = (uintptr_t)mbi.BaseAddress + mbi.RegionSize;
-        if (next <= array) return false;
-        array = next;
-    }
-    return true;
+    return readableSpan(array, (size_t)count * sizeof(uintptr_t));
+}
+
+// safeRead's guarantee at the cache's price: proven span, then a copy that still cannot fault.
+static bool walkRead(uintptr_t at, void* out, size_t len)
+{
+    if (!readableSpan(at, len)) return false;
+    __try { memcpy(out, (const void*)at, len); return true; }
+    __except (EXCEPTION_EXECUTE_HANDLER) { return false; }
 }
 #ifndef TW3K_RELEASE
 static thread_local uintptr_t t_walkCaller = 0;
@@ -1173,17 +1208,19 @@ static uintptr_t treeWalkHook(uintptr_t node, uintptr_t candidates)
 #endif
     if (depth == 0) {
         t_walkVisits = 0;
+        t_walkSpanCount = t_walkSpanNext = 0;
         TW3K_DIAGNOSTIC(t_walkCaller = (uintptr_t)_ReturnAddress());
     }
     bool cycle = false;
     for (int i = 0; i < depth; ++i) if (t_walkChain[i] == node) { cycle = true; break; }
-    if (depth >= B9_MAX_DEPTH || ++t_walkVisits > B9_MAX_VISITS || cycle) {
+    ++t_walkVisits;
+    if (depth >= B9_MAX_DEPTH || cycle) {
         const long n = InterlockedIncrement(&g_treeWalkRefusals);
         if (InterlockedIncrement(&g_treeWalkLogged) <= 8)
             logf("B9 GUARD: REFUSED — %s node=%016llX depth=%d visits=%u refusals=%ld",
-                 cycle ? "cycle in active chain" : depth >= B9_MAX_DEPTH ? "depth limit" : "visit limit",
+                 cycle ? "cycle in active chain" : "depth limit",
                  (unsigned long long)node, depth, t_walkVisits, n);
-        TW3K_DIAGNOSTIC(reportB9Culprit("Cycle/depth/work bound: recursive descent refused.",
+        TW3K_DIAGNOSTIC(reportB9Culprit("Cycle/depth bound: recursive descent refused.",
                                       node, parent, candidates, depth));
         return 0;
     }
@@ -1206,7 +1243,8 @@ static uintptr_t treeWalkHook(uintptr_t node, uintptr_t candidates)
     uint32_t candidateCount = 0;
     uintptr_t candidateArray = 0;
     if (!plausibleNode(candidates) ||
-        !readAt(candidates + 4, candidateCount) || !readAt(candidates + 8, candidateArray) ||
+        !walkRead(candidates + 4, &candidateCount, sizeof(candidateCount)) ||
+        !walkRead(candidates + 8, &candidateArray, sizeof(candidateArray)) ||
         !readableWalkArray(candidateArray, candidateCount)) {
         const long n = InterlockedIncrement(&g_treeWalkRefusals);
         if (InterlockedIncrement(&g_treeWalkLogged) <= 8)
@@ -1219,9 +1257,9 @@ static uintptr_t treeWalkHook(uintptr_t node, uintptr_t candidates)
     // without checking. Read both under the same no-fault discipline.
     uint32_t  count = 0;
     uintptr_t arr   = 0;
-    if (!safeRead((void*)(node + OFF_WIDGET_CHILD_COUNT), &count, sizeof(count)) ||
-        !safeRead((void*)(node + OFF_WIDGET_CHILD_ARRAY), &arr,   sizeof(arr))) {
-        // ⚠ safeRead (VirtualQuery) is used HERE and not on `node` above deliberately: this runs
+    if (!walkRead(node + OFF_WIDGET_CHILD_COUNT, &count, sizeof(count)) ||
+        !walkRead(node + OFF_WIDGET_CHILD_ARRAY, &arr,   sizeof(arr))) {
+        // ⚠ A checked read (walkRead: cached VirtualQuery) is used HERE and not on `node` above deliberately: this runs
         // only once we already believe the node is real, so it is off the fast rejection path, and
         // being wrong here is what costs a process.
         const long n = InterlockedIncrement(&g_treeWalkRefusals);
