@@ -163,6 +163,78 @@ bool setFeedIconGuard(bool on, const char** why)
     return true;
 }
 
+// ============================================================================================
+// #105 — the same defect one getter over: `EventType` (FUN_142F5B4F0, registered at 0x14028B7AC)
+//
+//     142F5B500  CALL 0x14038BF30                 ; bag = get_property_bag_TIME_LINE_GROUP(tag)
+//     142F5B505  MOV  R8,[RBX]                    ; the result sink's vtable
+//     142F5B508  MOV  RCX,RBX
+//     142F5B50B  MOV  RDX,[RAX+0x8]               ; ★ FAULT: no bag, no null check
+//     142F5B50F  ADD  RSP,0x20 / POP RBX / JMP [R8+0x70]
+//
+// A 3rd-seat player's dump from 2026-10-14 (190 Expanded mod set, issue #105) faults here reading
+// 0x8: an event-feed entry whose tag has no property bag — the "empty landmine event" that crashes
+// when touched. Its sibling getter at 0x142F5B4D0 shows the engine's own idiom for "nothing to
+// report": return without setting the sink. So the tail becomes exactly that, in place:
+//
+//     MOV RCX,RBX / LEA RSP,[RSP+0x20] / POP RBX     ; LEA, not ADD: the flags are needed next
+//     TEST RAX,RAX / JZ ret
+//     MOV R8,[RCX] / MOV RDX,[RAX+0x8] / JMP [R8+0x70]
+//   ret:
+//     RET
+//
+// 26 bytes over the original 19 and 7 of the 8 INT3 pad bytes before the next function at
+// 0x142F5B520; the remaining byte stays INT3. Non-null path: same registers, same tail call.
+// ⚠ Again an airbag. Why such an entry exists is not answered by this.
+// ============================================================================================
+static constexpr uintptr_t RVA_EVENTTYPE_TAIL = 0x02F5B505;
+static constexpr size_t    EVENTTYPE_LEN      = 27;
+static const uint8_t EXPECT_EVENTTYPE[EVENTTYPE_LEN] = {
+    0x4C,0x8B,0x03,                  // MOV  R8,[RBX]
+    0x48,0x8B,0xCB,                  // MOV  RCX,RBX
+    0x48,0x8B,0x50,0x08,             // MOV  RDX,[RAX+0x8]
+    0x48,0x83,0xC4,0x20,             // ADD  RSP,0x20
+    0x5B,                            // POP  RBX
+    0x49,0xFF,0x60,0x70,             // JMP  [R8+0x70]
+    0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC   // pad up to 0x142F5B520
+};
+static const uint8_t PATCH_EVENTTYPE[EVENTTYPE_LEN] = {
+    0x48,0x8B,0xCB,                  // MOV  RCX,RBX
+    0x48,0x8D,0x64,0x24,0x20,        // LEA  RSP,[RSP+0x20]
+    0x5B,                            // POP  RBX
+    0x48,0x85,0xC0,                  // TEST RAX,RAX
+    0x74,0x0B,                       // JZ   ret
+    0x4C,0x8B,0x01,                  // MOV  R8,[RCX]
+    0x48,0x8B,0x50,0x08,             // MOV  RDX,[RAX+0x8]
+    0x49,0xFF,0x60,0x70,             // JMP  [R8+0x70]
+    0xC3,                            // ret: RET
+    0xCC
+};
+static bool g_eventTypePatched = false;
+
+bool patchEventTypeGuard()
+{
+    if (g_eventTypePatched) return true;
+    const uintptr_t addr = g_base + RVA_EVENTTYPE_TAIL;
+    uint8_t cur[EVENTTYPE_LEN] = { 0 };
+    if (!safeRead((void*)addr, cur, EVENTTYPE_LEN) || memcmp(cur, EXPECT_EVENTTYPE, EVENTTYPE_LEN) != 0) {
+        logf("event type guard: signature mismatch or unreadable — NOT patched");
+        return false;
+    }
+    if (!writeCode(addr, PATCH_EVENTTYPE, EVENTTYPE_LEN)) return false;
+    g_eventTypePatched = true;
+    logf(">>> #105 EVENT TYPE GUARD: ARMED. An event-feed entry with no property bag reports no "
+         "EventType instead of crashing this client.");
+    return true;
+}
+
+void unpatchEventTypeGuard()
+{
+    if (!g_eventTypePatched) return;
+    if (writeCode(g_base + RVA_EVENTTYPE_TAIL, EXPECT_EVENTTYPE, EVENTTYPE_LEN))
+        g_eventTypePatched = false;
+}
+
 #ifndef TW3K_RELEASE
 void reportFeedIconGuard()
 {

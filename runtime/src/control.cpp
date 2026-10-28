@@ -278,7 +278,8 @@ static void executeControl(const char* cmd, char* reply, size_t replySz)
                 "                        is up — the list is empty at any other time.\n"
                 "  feed [on|off|         B1: the event-feed ticker. No arg = the counts, and whether\n"
                 "       dirty|refresh|   \n"
-                "       rebuild|icon]    \n"
+                "       rebuild|icon|    \n"
+                "       dismiss]         \n"
                 "                        a box was ever ASKED for. `off` silences the per-transition\n"
                 "                        lines; the counts accrue either way. `on`/`off` write nothing.\n"
                 "                        ⚠ `dirty` WRITES one byte: it marks the feed's context stale\n"
@@ -776,7 +777,25 @@ static void executeControl(const char* cmd, char* reply, size_t replySz)
         // without the other is how "the event fires" was mistaken for "a box appears".
         if (!v[0]) {
             reportFeedTicker(); reportFeedGate(); reportNextAutoOpen(); reportFactionInList();
-            reportFeedIconGuard();
+            reportFeedIconGuard(); reportEventDismiss();
+            return;
+        }
+
+        // `feed dismiss [on|off]` - #105. Installed at attach; `off` restores the vanilla symptom
+        // (a 3rd/4th human's right-clicked entries return) for a same-session A/B. Writes nothing
+        // the model reads: the switch only stops storing and answering.
+        if (strcmp(v, "dismiss") == 0) {
+            char w[32];
+            argAt(cmd, 2, w, sizeof(w));
+            const bool don = (strcmp(w, "on") == 0), doff = (strcmp(w, "off") == 0);
+            if (w[0] && !don && !doff) { appendf(reply, replySz, "usage: feed dismiss [on|off]\n"); return; }
+            if (w[0] && !setEventDismissEnabled(don)) {
+                appendf(reply, replySz, "REFUSED: #105 dismissal hooks are not installed.\n");
+                return;
+            }
+            reportEventDismiss();
+            appendf(reply, replySz, "#105 event dismissal: %s - counts in the log.\n",
+                    eventDismissEnabled() ? "ON" : "OFF (vanilla: 3rd/4th-player dismissals return)");
             return;
         }
 

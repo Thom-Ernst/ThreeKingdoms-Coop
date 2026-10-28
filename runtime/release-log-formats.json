@@ -140,6 +140,10 @@
     "format": "campaign: human count %u -> %u (automatic count hold)"
   },
   {
+    "file": "eventdismiss.cpp",
+    "format": "Event dismissal: storage full; further 3rd/4th-player dismissals will return"
+  },
+  {
     "file": "eventread.cpp",
     "format": "Event read containment: signature mismatch/unreadable; refusing installation"
   },
@@ -178,6 +182,14 @@
   {
     "file": "feedicon.cpp",
     "format": "feed icon guard: restored — the vanilla instruction order is back, crash included."
+  },
+  {
+    "file": "feedicon.cpp",
+    "format": "event type guard: signature mismatch or unreadable — NOT patched"
+  },
+  {
+    "file": "feedicon.cpp",
+    "format": ">>> #105 EVENT TYPE GUARD: ARMED. An event-feed entry with no property bag reports no EventType instead of crashing this client."
   },
   {
     "file": "gift.cpp",
@@ -473,6 +485,10 @@
   },
   {
     "file": "main.cpp",
+    "format": "⚠ #105 event type guard: NOT applied — this client keeps the vanilla crash on an event-feed entry with no property bag."
+  },
+  {
+    "file": "main.cpp",
     "format": "⚠⚠ #13 side gate: NOT applied — above two humans this client will put its spectators on the ATTACKER's side, and it now DISAGREES with any client that did apply it. Do not play a 3+ player session on this build until every local log shows the patch applied."
   },
   {
@@ -498,6 +514,14 @@
   {
     "file": "main.cpp",
     "format": "!! #63 COUNT HOLD: could NOT auto-arm — %s. ⚠ A 3rd or 4th player on this machine will lose every event, and this client's count will differ from the others'. Do not run a 3-player campaign against this build; send me this log."
+  },
+  {
+    "file": "main.cpp",
+    "format": "Event dismissal: installed — a 3rd/4th player's right-clicked feed entries stay dismissed."
+  },
+  {
+    "file": "main.cpp",
+    "format": "Event dismissal: NOT installed — a 3rd/4th player's right-clicked feed entries will return."
   },
   {
     "file": "main.cpp",

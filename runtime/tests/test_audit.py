@@ -38,6 +38,8 @@ static bool campaignTickHookActive() { return tickActive; }
 struct FakeDetour { bool active; };
 static FakeDetour g_cursorWriteDetour{true}, g_collectDetour{true};
 static volatile long g_holdArmed = 0;
+static uintptr_t g_dismissReset = 1;  // #105 shares both lifetime boundaries
+static void eventDismissReset(uintptr_t mgr) { g_dismissReset = mgr; }
 '''
 code += region(event, 'struct SideCursor {', 'static SideCursor* sideFind(')
 code += ''.join(function(event, f) for f in ('sideFind', 'sideFindOrAdd', 'resetSideCursors', 'setHumanFactionCountHold'))
@@ -114,7 +116,8 @@ int main() {
     auto* a=sideFindOrAdd(0x1000,0x20000); a->cursor=900;
     auto* b=sideFindOrAdd(0x2000,0x20000); assert(b && b->cursor==0);
     eventMgrDtorHook(0,0x2000); assert(sideFind(0x1000,0x20000)->cursor==900);
-    resetSideCursors(0); assert(!sideFind(0x1000,0x20000));
+    assert(g_dismissReset==0x2000);
+    resetSideCursors(0); assert(!sideFind(0x1000,0x20000)); assert(g_dismissReset==0);
 
     uintptr_t mgr=(uintptr_t)managerMemory;
     *(uint32_t*)(mgr+0x30)=250;
@@ -188,6 +191,7 @@ native = r'''
 uintptr_t g_base=0;
 void logf(const char*, ...) {}
 bool safeRead(const void* from, void* to, size_t n) { memcpy(to,from,n); return true; }
+void eventDismissReset(uintptr_t) {}
 #include "detour.cpp"
 '''
 native += region(event, 'struct SideCursor {', 'static SideCursor* sideFind(')

@@ -5056,6 +5056,7 @@ void dumpEverything()
     reportTelestration();   // #47/#50 — which ping/arrow slots this client holds. Silent outside a battle
     dumpEventMgrRegistry(); // #63 — the list that actually gates the event feed. Read this one.
     reportEventCursors();   // #63 — and whether this machine can survive a 3rd human at all
+    reportEventDismiss();   // #105 — a 3rd/4th human's right-click dismissals
     reportHumanFactionCountHold();
     reportHumanFactionLoad(); // #68 — what the save actually contained, and what survived the load
     dumpHumanFactionVector();

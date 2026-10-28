@@ -871,6 +871,9 @@ static DWORD WINAPI probeThread(LPVOID)
         logf("⚠ #69 feed icon guard: NOT applied — this client keeps the vanilla crash. Harmless "
              "unless an event-feed entry is presented with an empty feed, which is exactly the "
              "2026-08-14 signature.");
+    if (!patchEventTypeGuard())
+        logf("⚠ #105 event type guard: NOT applied — this client keeps the vanilla crash on an "
+             "event-feed entry with no property bag.");
 
     // ★★★ #13/B10 — the same treatment, and for the same reason: it is a correctness fix, not an
     // experiment. Above two humans the engine hands a player with no army in the battle `armies[0]`,
@@ -931,6 +934,12 @@ static DWORD WINAPI probeThread(LPVOID)
                  "will lose every event, and this client's count will differ from the others'. Do "
                  "not run a 3-player campaign against this build; send me this log.",
                  why ? why : "preconditions not met");
+
+        // #105 depends on the cursor hooks' manager-lifetime resets, so it installs only here.
+        if (installEventDismissHooks())
+            logf("Event dismissal: installed — a 3rd/4th player's right-clicked feed entries stay dismissed.");
+        else
+            logf("Event dismissal: NOT installed — a 3rd/4th player's right-clicked feed entries will return.");
     }
     else
         logf("Event-cursor hooks: NOT installed — ⚠ this machine must NOT take part in a 3-player "
@@ -1191,7 +1200,9 @@ static DWORD WINAPI probeThread(LPVOID)
             if (g_refreshBlendOn)  setRefreshBlend(false);
             removeJoinHook(); removeSeatHook(); removePanelHook();
             removeSlotChangedHook(); removeShareHook(); removeHudCtorHook();
-            removeBattleRoleHook(); removeCommandExecHook(); removeEventCursorHooks();
+            removeBattleRoleHook(); removeCommandExecHook();
+            removeEventDismissHooks();  // #105 — before the cursor hooks: their lifetime hooks guard its table
+            removeEventCursorHooks();
             removeTelestrationHook();   // #47/#50 — read-only, and see the note below on why that
                                         // is not a reason to leave it installed
             // ⚠ The two read-only B1 probes were MISSING from both this list and the detach one until
@@ -1207,6 +1218,7 @@ static DWORD WINAPI probeThread(LPVOID)
             removeCcoHijack(); removeCcoResolverHook();
             removeTickHook(); removeFreshFactionHook(); removeSaveLobbyHook(); removePanelResetHook(); removeLeaveCacheGuard();
             removeTreeWalkGuard();
+            unpatchEventTypeGuard();    // #105 — same as #69
             unpatchFeedIconGuard();     // #69 — code bytes, so it belongs with the hooks, not the
                                         // switches: leaving it after FreeLibrary would be fine, but
                                         // panic means "make this process vanilla again"
@@ -1321,6 +1333,7 @@ static DWORD WINAPI probeThread(LPVOID)
 #ifndef TW3K_RELEASE
     removeCommandExecHook();
 #endif
+    removeEventDismissHooks();  // #105 — before the cursor hooks that keep its table's manager alive
     removeEventCursorHooks();
     removeTelestrationHook();   // #47/#50 — read-only, and therefore exactly the kind this list loses
     // ⚠ See the note in the panic path: these are read-only, which is why they were overlooked, and
@@ -1358,6 +1371,7 @@ static DWORD WINAPI probeThread(LPVOID)
     removeCcoHijack();
     removeCcoResolverHook();
     unpatchFeedIconGuard();     // #69 — see the panic path
+    unpatchEventTypeGuard();    // #105 — see the panic path
     unpatchBystanderSideGate(); // #13 — see the panic path
 #ifndef TW3K_RELEASE
     unpatchUpdateNullGuard();   // #75 — see the panic path

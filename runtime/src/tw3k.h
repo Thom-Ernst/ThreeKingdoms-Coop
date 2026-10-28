@@ -307,6 +307,16 @@ void reportCommandTraffic();    // B1: the per-command counts, and the delta sin
 bool installEventCursorHooks();
 void removeEventCursorHooks();
 void reportEventCursors();
+// ---------------------------------------------------------------- eventdismiss.cpp
+// #105: the engine drops a DISMISSED update for registry index 2/3, so a 3rd/4th human's
+// right-clicked feed entries return. A UI-only side table answers IsDismissed for them; it is not
+// saved. Install only after the cursor lifetime hooks, which call eventDismissReset.
+bool installEventDismissHooks();
+void removeEventDismissHooks();
+void eventDismissReset(uintptr_t mgr);   // 0 = every manager (HUMAN_FACTIONS load)
+void reportEventDismiss();
+bool eventDismissEnabled();             // debug: `feed dismiss`
+bool setEventDismissEnabled(bool on);
 // ---------------------------------------------------------------- telestration.cpp
 // #47/#50: pings and battle field-lines are ONE subsystem — internally **telestration** — and it
 // admits a fixed participant set chosen once at battle construction. Measured rule (§6uuu.38):
@@ -334,6 +344,10 @@ bool telestrationFixArmed();
 bool patchFeedIconGuard();
 void unpatchFeedIconGuard();
 bool feedIconGuardArmed();
+// #105: the sibling `EventType` getter has the same unchecked bag read (exe+0x2F5B50B, a 3rd
+// seat's crash on an empty feed entry). Same treatment: armed at attach, airbag only.
+bool patchEventTypeGuard();
+void unpatchEventTypeGuard();
 
 // ---------------------------------------------------------------- sidegate.cpp
 //

@@ -183,6 +183,7 @@ static void resetSideCursors(uintptr_t mgr)
         s = {};
         ++cleared;
     }
+    eventDismissReset(mgr);   // #105's table shares these two boundaries and reads mgr unchecked
     ++g_sideResets;
     diagLogf("EVENT CURSOR lifetime: boundary #%ld (%s), manager=%016llX, cleared=%u, "
          "writes=%ld reads=%ld full=%ld out-of-range=%ld",
