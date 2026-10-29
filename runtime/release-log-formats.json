@@ -189,7 +189,15 @@
   },
   {
     "file": "feedicon.cpp",
-    "format": ">>> #105 EVENT TYPE GUARD: ARMED. An event-feed entry with no property bag reports no EventType instead of crashing this client."
+    "format": "event-feed bag guard +0x50: signature mismatch or unreadable — NOT patched"
+  },
+  {
+    "file": "feedicon.cpp",
+    "format": "event-feed bag guard +0x48: signature mismatch or unreadable — NOT patched"
+  },
+  {
+    "file": "feedicon.cpp",
+    "format": ">>> #105 EVENT-FEED BAG GUARDS: ARMED (EventType, +0x50, +0x48). An event-feed entry with no property bag reports nothing instead of crashing this client."
   },
   {
     "file": "gift.cpp",
@@ -485,7 +493,7 @@
   },
   {
     "file": "main.cpp",
-    "format": "⚠ #105 event type guard: NOT applied — this client keeps the vanilla crash on an event-feed entry with no property bag."
+    "format": "⚠ #105 event-feed bag guards: NOT all applied — this client keeps a vanilla crash on an event-feed entry with no property bag."
   },
   {
     "file": "main.cpp",

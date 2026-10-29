@@ -872,8 +872,8 @@ static DWORD WINAPI probeThread(LPVOID)
              "unless an event-feed entry is presented with an empty feed, which is exactly the "
              "2026-08-14 signature.");
     if (!patchEventTypeGuard())
-        logf("⚠ #105 event type guard: NOT applied — this client keeps the vanilla crash on an "
-             "event-feed entry with no property bag.");
+        logf("⚠ #105 event-feed bag guards: NOT all applied — this client keeps a vanilla crash on "
+             "an event-feed entry with no property bag.");
 
     // ★★★ #13/B10 — the same treatment, and for the same reason: it is a correctness fix, not an
     // experiment. Above two humans the engine hands a player with no army in the battle `armies[0]`,

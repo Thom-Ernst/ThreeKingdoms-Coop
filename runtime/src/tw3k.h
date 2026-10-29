@@ -314,6 +314,8 @@ void reportEventCursors();
 bool installEventDismissHooks();
 void removeEventDismissHooks();
 void eventDismissReset(uintptr_t mgr);   // 0 = every manager (HUMAN_FACTIONS load)
+// The #56 auto-open IsRead fallback: stored READ or DISMISSED for a 3rd/4th human, current numbering.
+bool eventSideAnswersRead(uintptr_t msg, uintptr_t faction);
 void reportEventDismiss();
 bool eventDismissEnabled();             // debug: `feed dismiss`
 bool setEventDismissEnabled(bool on);

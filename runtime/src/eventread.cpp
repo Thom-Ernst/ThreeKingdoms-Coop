@@ -29,8 +29,12 @@ static uint8_t eventReadLeaf(void* msg, void* faction) {
     const bool native=((Native)(g_base+kLeaf))(msg,faction)!=0;
     if (!g_eventReadEnabled.load()) return native;
     auto reader=[](uintptr_t a,void* b,size_t n) { return safeRead((void*)a,b,n); };
-    return eventread::containsRead(native,eventread::feed,(uintptr_t)msg,(uintptr_t)faction,
-                                   g_base+RVA_CAMPAIGN_ROOT,reader);
+    if (eventread::containsRead(native,eventread::feed,(uintptr_t)msg,(uintptr_t)faction,
+                                g_base+RVA_CAMPAIGN_ROOT,reader))
+        return 1;
+    // #105 removed dismissed entries from the list containsRead searches; its table keeps READ
+    // and DISMISSED for the 3rd/4th human, so a dismissed or read event does not reopen.
+    return eventSideAnswersRead((uintptr_t)msg,(uintptr_t)faction) ? 1 : 0;
 }
 static bool bytesMatch(uintptr_t site,const uint8_t* expected,size_t n) {
     uint8_t bytes[32]{};

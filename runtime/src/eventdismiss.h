@@ -19,7 +19,11 @@ namespace eventdismiss {
 // Past it the table refuses new entries: the event stays dismissable-but-returning (vanilla).
 constexpr size_t maxEntries = 8192;
 
-struct Entry { uintptr_t faction; uint32_t index; uint32_t reserved; };
+// One entry per (faction, log index); the flags say what the engine refused to store for it.
+// READ is the same two-human gate as DISMISSED (FUN_1414CEEB0, bits 13-14), and the #56 auto-open
+// check needs it: without a stored read, a dismissed event that left the feed list reopens.
+enum : uint32_t { kDismissed = 1u, kRead = 2u };
+struct Entry { uintptr_t faction; uint32_t index; uint32_t flags; };
 
 struct Table {
     uintptr_t mgr = 0;
@@ -41,26 +45,30 @@ struct Table {
         }
         return lo;
     }
-    bool contains(uintptr_t faction, uint32_t index) const {
+    bool contains(uintptr_t faction, uint32_t index, uint32_t mask = kDismissed) const {
         const size_t at = lowerBound(faction, index);
-        return at < entries && items[at].faction == faction && items[at].index == index;
+        return at < entries && items[at].faction == faction && items[at].index == index &&
+               (items[at].flags & mask) != 0;
     }
 
-    // A dismissal the engine accepted the COMMAND for but refused to store. `generation` is the
-    // command's; the engine itself only applies one whose generation is current.
+    // A READ or DISMISSED the engine accepted the COMMAND for but refused to store. `generation`
+    // is the command's; the engine itself only applies one whose generation is current.
     enum class Record { Stored, Duplicate, Stale, Full };
     Record record(uintptr_t manager, uintptr_t faction, uint32_t generation, uint32_t index,
-                  uint32_t currentGeneration) {
+                  uint32_t currentGeneration, uint32_t flag = kDismissed) {
         if (!manager || !faction || generation != currentGeneration) return Record::Stale;
         if (manager != mgr) { reset(); mgr = manager; }
         // An erase during this generation renumbered the log after the command was built.
         if (eraseSeen && eraseGeneration == currentGeneration) return Record::Stale;
         const size_t at = lowerBound(faction, index);
-        if (at < entries && items[at].faction == faction && items[at].index == index)
-            return Record::Duplicate;
+        if (at < entries && items[at].faction == faction && items[at].index == index) {
+            if (items[at].flags & flag) return Record::Duplicate;
+            items[at].flags |= flag;
+            return Record::Stored;
+        }
         if (entries >= maxEntries) return Record::Full;
         for (size_t i = entries; i > at; --i) items[i] = items[i - 1];
-        items[at] = Entry{ faction, index, 0 };
+        items[at] = Entry{ faction, index, flag };
         ++entries;
         return Record::Stored;
     }
@@ -85,10 +93,10 @@ struct Table {
     // A materialized message stamps the generation it was built in (+0x88) beside its log index
     // (+0x8C). Answer only for the current numbering; anything else falls back to the engine.
     bool query(uintptr_t manager, uintptr_t faction, uint32_t generation, uint32_t index,
-               uint32_t currentGeneration) const {
+               uint32_t currentGeneration, uint32_t mask = kDismissed) const {
         if (!manager || manager != mgr || generation != currentGeneration) return false;
         if (eraseSeen && eraseGeneration == currentGeneration) return false;
-        return contains(faction, index);
+        return contains(faction, index, mask);
     }
 
     bool knowsFaction(uintptr_t faction) const {

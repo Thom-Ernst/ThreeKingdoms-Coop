@@ -55,6 +55,14 @@ static constexpr uintptr_t RVA_DISMISS_HANDLER = 0x014CEDF0;
 static const uint8_t EXPECT_DISMISS_HANDLER[] = {
     0x48,0x89,0x5C,0x24,0x08, 0x57, 0x48,0x83,0xEC,0x30, 0x48,0x8B,0xD9, 0x4D,0x8B,0xD8
 };
+// FUN_1414CEEB0(mgr, key*, faction): the READ handler, same gate at 0x1414CEEEA (`CMP R9,2 / JGE`).
+// 20 bytes, 4 whole instructions, none relative; the loop targets are all past them.
+//   4C 8B D9 MOV R11,RCX   48 8B 89 30 02 00 00 MOV RCX,[RCX+0x230]   4C 8B C9 MOV R9,RCX
+//   41 8B 83 2C 02 00 00 MOV EAX,[R11+0x22C]
+static constexpr uintptr_t RVA_READ_HANDLER = 0x014CEEB0;
+static const uint8_t EXPECT_READ_HANDLER[] = {
+    0x4C,0x8B,0xD9, 0x48,0x8B,0x89,0x30,0x02,0x00,0x00, 0x4C,0x8B,0xC9, 0x41,0x8B,0x83,0x2C,0x02,0x00,0x00
+};
 // FUN_14149F110(msg, faction) -> AL. A 0x39-byte leaf: the JNZ at +7 rules out a 14-byte detour,
 // so entryRedirect5 steals the first two instructions (7 bytes) and the trampoline returns to the
 // JNZ with the CMP's flags intact.
@@ -83,8 +91,8 @@ using IsDismissedFn    = uint8_t (*)(uintptr_t msg, uintptr_t faction);
 using LogEraseFn       = void (*)(uintptr_t log, uint32_t start, uint32_t len);
 using DismissSinkFn    = void (*)(uintptr_t sink, void* payload);
 
-static Detour g_handlerDetour, g_isDismissedDetour, g_eraseDetour;
-static DismissHandlerFn g_origHandler = nullptr;
+static Detour g_handlerDetour, g_readDetour, g_isDismissedDetour, g_eraseDetour;
+static DismissHandlerFn g_origHandler = nullptr, g_origReadHandler = nullptr;
 static IsDismissedFn    g_origIsDismissed = nullptr;
 static LogEraseFn       g_origErase = nullptr;
 
@@ -93,7 +101,7 @@ static eventdismiss::Table g_table;
 static std::atomic<bool> g_enabled{false};
 static std::atomic<bool> g_any{false};     // the UI leaf's lock-free early out
 static long g_stored = 0, g_duplicate = 0, g_stale = 0, g_full = 0, g_answered = 0, g_erases = 0;
-static long g_notifyRefused = 0;
+static long g_notifyRefused = 0, g_readStored = 0, g_readAnswered = 0;
 
 // The handler's own search, bound and all: linear over [data, data+count).
 static int registryIndexOf(uintptr_t mgr, uintptr_t faction)
@@ -125,36 +133,56 @@ static void notifyDismissed(uintptr_t mgr, uintptr_t faction, uint32_t generatio
     ((DismissSinkFn)fn)(model + OFF_MODEL_DISMISS_SINK, &payload);
 }
 
-static void dismissHandlerHook(uintptr_t mgr, const uint32_t* key, uintptr_t faction)
+// Both handlers refuse registry index 2/3 the same way; this keeps what they refused. Returns
+// whether the engine would have accepted the update (so the caller may do its accept-path work).
+static bool storeRefused(uintptr_t mgr, const uint32_t* key, uintptr_t faction, uint32_t flag,
+                         uint32_t* outGeneration)
 {
-    g_origHandler(mgr, key, faction);
-    if (!g_enabled.load(std::memory_order_relaxed)) return;
+    if (!g_enabled.load(std::memory_order_relaxed)) return false;
     const int idx = registryIndexOf(mgr, faction);
-    if (idx < NATIVE_DISMISS_SLOTS || idx >= DISMISS_SLOTS_MAX) return;   // native, or not a human
+    if (idx < NATIVE_DISMISS_SLOTS || idx >= DISMISS_SLOTS_MAX) return false;   // native, or not a human
 
     uint32_t generation = 0, index = 0, current = 0;
     if (!readAt((uintptr_t)key, generation) || !readAt((uintptr_t)key + 4, index) ||
         !readAt(mgr + OFF_EVMGR_GENERATION, current))
-        return;
+        return false;
     eventdismiss::Table::Record r;
     AcquireSRWLockExclusive(&g_lock);
-    r = g_table.record(mgr, faction, generation, index, current);
+    r = g_table.record(mgr, faction, generation, index, current, flag);
     g_any.store(!g_table.empty(), std::memory_order_relaxed);
     ReleaseSRWLockExclusive(&g_lock);
 
     using R = eventdismiss::Table::Record;
     switch (r) {
-    case R::Stored:    ++g_stored; break;
+    case R::Stored:    if (flag == eventdismiss::kRead) ++g_readStored; else ++g_stored; break;
     case R::Duplicate: ++g_duplicate; break;
-    case R::Stale:     ++g_stale; return;      // the engine would have refused this one too
+    case R::Stale:     ++g_stale; return false;      // the engine would have refused this one too
     case R::Full:
         if (++g_full == 1)
             logf("Event dismissal: storage full; further 3rd/4th-player dismissals will return");
-        return;
+        return false;
     }
-    diagLogf("Event dismissal #105: registry index %d, generation %u, log index %u -> %s",
-             idx, generation, index, r == R::Stored ? "stored" : "already stored");
-    notifyDismissed(mgr, faction, generation);
+    diagLogf("Event %s #105: registry index %d, generation %u, log index %u -> %s",
+             flag == eventdismiss::kRead ? "read" : "dismissal", idx, generation, index,
+             r == R::Stored ? "stored" : "already stored");
+    *outGeneration = generation;
+    return true;
+}
+
+static void dismissHandlerHook(uintptr_t mgr, const uint32_t* key, uintptr_t faction)
+{
+    g_origHandler(mgr, key, faction);
+    uint32_t generation = 0;
+    if (storeRefused(mgr, key, faction, eventdismiss::kDismissed, &generation))
+        notifyDismissed(mgr, faction, generation);
+}
+
+// The READ accept path sets its bit and returns: there is no notification to repeat.
+static void readHandlerHook(uintptr_t mgr, const uint32_t* key, uintptr_t faction)
+{
+    g_origReadHandler(mgr, key, faction);
+    uint32_t generation = 0;
+    storeRefused(mgr, key, faction, eventdismiss::kRead, &generation);
 }
 
 static uint8_t isDismissedHook(uintptr_t msg, uintptr_t faction)
@@ -174,6 +202,29 @@ static uint8_t isDismissedHook(uintptr_t msg, uintptr_t faction)
     ReleaseSRWLockShared(&g_lock);
     if (answer) InterlockedIncrement(&g_answered);
     return answer ? 1 : native;
+}
+
+// The #56 auto-open check asks IsRead. For a 3rd/4th human the model never keeps READ, and since
+// #105 a dismissed entry also leaves the feed list that #56's containment searched for a read copy,
+// so it reopened on every rebuild. A stored READ, or a DISMISSED (it was on screen to be
+// right-clicked), answers it. Same generation rule as isDismissedHook; unknown state says no.
+bool eventSideAnswersRead(uintptr_t msg, uintptr_t faction)
+{
+    if (!msg || !faction || !g_any.load(std::memory_order_relaxed) ||
+        !g_enabled.load(std::memory_order_relaxed))
+        return false;
+    bool answer = false;
+    AcquireSRWLockShared(&g_lock);
+    if (g_table.knowsFaction(faction)) {
+        const uint32_t generation = *(const uint32_t*)(msg + OFF_MSG_GENERATION);
+        const uint32_t index      = *(const uint32_t*)(msg + OFF_MSG_INDEX);
+        const uint32_t current    = *(const uint32_t*)(g_table.mgr + OFF_EVMGR_GENERATION);
+        answer = g_table.query(g_table.mgr, faction, generation, index, current,
+                               eventdismiss::kRead | eventdismiss::kDismissed);
+    }
+    ReleaseSRWLockShared(&g_lock);
+    if (answer) InterlockedIncrement(&g_readAnswered);
+    return answer;
 }
 
 static void logEraseHook(uintptr_t log, uint32_t start, uint32_t len)
@@ -221,6 +272,14 @@ bool installEventDismissHooks()
         detourRemove(g_eraseDetour, "event dismissal erase");
         return false;
     }
+    if (!detourInstall(g_readDetour, g_base + RVA_READ_HANDLER, sizeof(EXPECT_READ_HANDLER),
+                       EXPECT_READ_HANDLER, (uintptr_t)&readHandlerHook,
+                       (void**)&g_origReadHandler, "event read handler")) {
+        detourRemove(g_handlerDetour, "event dismissal handler");
+        detourRemove(g_isDismissedDetour, "event dismissal query");
+        detourRemove(g_eraseDetour, "event dismissal erase");
+        return false;
+    }
     g_enabled.store(true);
     return true;
 }
@@ -229,6 +288,7 @@ void removeEventDismissHooks()
 {
     // Stop storing, then stop answering; the erase bookkeeping goes last.
     g_enabled.store(false);
+    detourRemove(g_readDetour, "event read handler");
     detourRemove(g_handlerDetour, "event dismissal handler");
     detourRemove(g_isDismissedDetour, "event dismissal query");
     detourRemove(g_eraseDetour, "event dismissal erase");
@@ -240,7 +300,8 @@ bool eventDismissEnabled() { return g_enabled.load(); }
 // Off stops storing and answering but keeps the table, so `on` resumes with what was stored.
 bool setEventDismissEnabled(bool on)
 {
-    if (!g_handlerDetour.active || !g_isDismissedDetour.active || !g_eraseDetour.active) return false;
+    if (!g_handlerDetour.active || !g_readDetour.active || !g_isDismissedDetour.active ||
+        !g_eraseDetour.active) return false;
     g_enabled.store(on);
     logf("#105 event dismissal: switched %s", on ? "ON" : "OFF (vanilla)");
     return true;
@@ -249,7 +310,8 @@ bool setEventDismissEnabled(bool on)
 void reportEventDismiss()
 {
     logf("---- EVENT DISMISSAL (#105: right-click for the 3rd and 4th human) ----");
-    if (!g_handlerDetour.active || !g_isDismissedDetour.active || !g_eraseDetour.active) {
+    if (!g_handlerDetour.active || !g_readDetour.active || !g_isDismissedDetour.active ||
+        !g_eraseDetour.active) {
         logf("  NOT installed on this machine — a 3rd/4th player's dismissed entries return.");
         return;
     }
@@ -260,7 +322,8 @@ void reportEventDismiss()
     logf("  manager=%016llX entries=%zu/%zu stored=%ld duplicate=%ld stale=%ld full=%ld",
          (unsigned long long)mgr, entries, eventdismiss::maxEntries, g_stored, g_duplicate,
          g_stale, g_full);
-    logf("  answered=%ld erases replayed=%ld notify refused=%ld", g_answered, g_erases,
-         g_notifyRefused);
+    logf("  answered=%ld erases replayed=%ld notify refused=%ld | reads stored=%ld "
+         "auto-open answered read=%ld", g_answered, g_erases, g_notifyRefused, g_readStored,
+         g_readAnswered);
 }
 #endif

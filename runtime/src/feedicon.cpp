@@ -210,29 +210,144 @@ static const uint8_t PATCH_EVENTTYPE[EVENTTYPE_LEN] = {
     0xC3,                            // ret: RET
     0xCC
 };
-static bool g_eventTypePatched = false;
+// ============================================================================================
+// #105, round two: the same unchecked bag read in two more event-feed getters. The bag accessor
+// FUN_14038BF30 is only `MOV RAX,[RCX+0x28] / RET`, so "no bag" is a message whose +0x28 is null.
+// A scan of every call to it in 0x142F40000-0x142FA0000 found five unchecked reads: IconPath
+// (#69), EventType (above), these two, and 0x142F783B0, which FUN_142F77F20 only reaches after
+// null-checking the bag of the same message, so it needs nothing.
+//
+// (1) FUN_142F5B470 — 2026-10-28 dump (exe+0x2F5B493, read of 0x50), same 3rd-seat player:
+//
+//     142F5B48B  CALL 0x14038BF30 / MOV RCX,RDI / MOV RDX,[RAX+0x50]   ; ★ FAULT
+//     ...        MOV RAX,RBX / MOV RBX,[RSP+0x30] / ADD RSP,0x20 / POP RDI / JMP RAX
+//
+//   Same idiom as EventType, in place over the 23-byte tail and all 9 pad bytes to 0x142F5B4B0:
+//
+//     MOV RCX,RDI / MOV RDX,RAX / MOV RAX,RBX / MOV RBX,[RSP+0x30] / ADD RSP,0x20 / POP RDI
+//     TEST RDX,RDX / JZ ret / MOV RDX,[RDX+0x50] / JMP RAX
+//   ret:
+//     RET
+//
+// (2) FUN_142F6DCC0 — not yet seen crashing. It already has a default: when an earlier check
+//   fails it keeps RBX = 0x1443D5BC8 (a static it initialised above) and skips the bag. Its
+//   16-byte bag run cannot fit a null test in place, so the CALL at 0x142F6DD2B is pointed at a
+//   stub that returns the real bag, or a fake one whose +0x48 holds that same default — the
+//   following MOV RBX,[RAX+0x48] then loads exactly what the default path would have kept.
+// ============================================================================================
+static constexpr uintptr_t RVA_SITE50_TAIL = 0x02F5B490;
+static constexpr size_t    SITE50_LEN      = 32;
+static const uint8_t EXPECT_SITE50[SITE50_LEN] = {
+    0x48,0x8B,0xCF,                  // MOV  RCX,RDI
+    0x48,0x8B,0x50,0x50,             // MOV  RDX,[RAX+0x50]
+    0x48,0x8B,0xC3,                  // MOV  RAX,RBX
+    0x48,0x8B,0x5C,0x24,0x30,        // MOV  RBX,[RSP+0x30]
+    0x48,0x83,0xC4,0x20,             // ADD  RSP,0x20
+    0x5F,                            // POP  RDI
+    0x48,0xFF,0xE0,                  // JMP  RAX
+    0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC   // pad up to 0x142F5B4B0
+};
+static const uint8_t PATCH_SITE50[SITE50_LEN] = {
+    0x48,0x8B,0xCF,                  // MOV  RCX,RDI
+    0x48,0x8B,0xD0,                  // MOV  RDX,RAX       ; the bag
+    0x48,0x8B,0xC3,                  // MOV  RAX,RBX
+    0x48,0x8B,0x5C,0x24,0x30,        // MOV  RBX,[RSP+0x30]
+    0x48,0x83,0xC4,0x20,             // ADD  RSP,0x20
+    0x5F,                            // POP  RDI
+    0x48,0x85,0xD2,                  // TEST RDX,RDX
+    0x74,0x07,                       // JZ   ret
+    0x48,0x8B,0x52,0x50,             // MOV  RDX,[RDX+0x50]
+    0x48,0xFF,0xE0,                  // JMP  RAX
+    0xC3                             // ret: RET
+};
+
+static constexpr uintptr_t RVA_SITE48_CALL   = 0x02F6DD2B;
+static constexpr uintptr_t RVA_BAG_ACCESSOR  = 0x0038BF30;
+static constexpr uintptr_t RVA_SITE48_DEFAULT = 0x043D5BC8;   // LEA RBX,[RIP+..] at 0x142F6DCDA
+static const uint8_t EXPECT_SITE48_NEXT[] = { 0x48,0x8B,0x58,0x48 };   // MOV RBX,[RAX+0x48]
+
+static bool g_eventTypePatched = false, g_site50Patched = false, g_site48Patched = false;
+static uint8_t  g_site48Orig[5] = { 0 };
+static uint8_t* g_site48Page = nullptr;
+
+static bool patchInPlace(uintptr_t rva, const uint8_t* expect, const uint8_t* patch, size_t len)
+{
+    uint8_t cur[64] = { 0 };
+    if (len > sizeof(cur) || !safeRead((void*)(g_base + rva), cur, len) || memcmp(cur, expect, len) != 0)
+        return false;
+    return writeCode(g_base + rva, patch, len);
+}
+
+static bool patchSite48()
+{
+    const uintptr_t call = g_base + RVA_SITE48_CALL;
+    uint8_t cur[9] = { 0 };
+    if (!safeRead((void*)call, cur, sizeof(cur)) || cur[0] != 0xE8 ||
+        memcmp(cur + 5, EXPECT_SITE48_NEXT, sizeof(EXPECT_SITE48_NEXT)) != 0)
+        return false;
+    int32_t rel = 0; memcpy(&rel, cur + 1, 4);
+    if (call + 5 + (intptr_t)rel != g_base + RVA_BAG_ACCESSOR) return false;
+    uint8_t lea[3] = { 0 };   // the default's LEA RBX,[RIP+disp] must still be where it was read
+    int32_t disp = 0;
+    if (!safeRead((void*)(g_base + 0x02F6DCDA), lea, 3) || lea[0] != 0x48 || lea[1] != 0x8D ||
+        lea[2] != 0x1D || !safeRead((void*)(g_base + 0x02F6DCDD), &disp, 4) ||
+        g_base + 0x02F6DCE1 + (intptr_t)disp != g_base + RVA_SITE48_DEFAULT)
+        return false;
+    if (!g_site48Page) g_site48Page = (uint8_t*)allocNear(call);
+    if (!g_site48Page) return false;
+    // page+0x40: MOV RAX,[RCX+0x28] / TEST RAX,RAX / JZ +1 / RET / LEA RAX,[RIP+fake] / RET
+    // page+0x80: the fake bag; only its +0x48 is ever read, and it holds the getter's own default.
+    uint8_t* stub = g_site48Page + 0x40;
+    uint8_t* fake = g_site48Page + 0x80;
+    const uint8_t head[] = { 0x48,0x8B,0x41,0x28, 0x48,0x85,0xC0, 0x74,0x01, 0xC3, 0x48,0x8D,0x05 };
+    memcpy(stub, head, sizeof(head));
+    const int32_t toFake = (int32_t)((intptr_t)fake - (intptr_t)(stub + sizeof(head) + 4));
+    memcpy(stub + sizeof(head), &toFake, 4);
+    stub[sizeof(head) + 4] = 0xC3;
+    memset(fake, 0, 0x50);
+    const uintptr_t dflt = g_base + RVA_SITE48_DEFAULT;
+    memcpy(fake + 0x48, &dflt, 8);
+    FlushInstructionCache(GetCurrentProcess(), stub, 0x40);
+    const int64_t d = (int64_t)(uintptr_t)stub - (int64_t)(call + 5);
+    if (d < INT32_MIN || d > INT32_MAX) return false;
+    uint8_t patch[5] = { 0xE8 }; const int32_t d32 = (int32_t)d; memcpy(patch + 1, &d32, 4);
+    memcpy(g_site48Orig, cur, 5);
+    return writeCode(call, patch, 5);
+}
 
 bool patchEventTypeGuard()
 {
-    if (g_eventTypePatched) return true;
-    const uintptr_t addr = g_base + RVA_EVENTTYPE_TAIL;
-    uint8_t cur[EVENTTYPE_LEN] = { 0 };
-    if (!safeRead((void*)addr, cur, EVENTTYPE_LEN) || memcmp(cur, EXPECT_EVENTTYPE, EVENTTYPE_LEN) != 0) {
-        logf("event type guard: signature mismatch or unreadable — NOT patched");
-        return false;
+    if (!g_eventTypePatched) {
+        if (patchInPlace(RVA_EVENTTYPE_TAIL, EXPECT_EVENTTYPE, PATCH_EVENTTYPE, EVENTTYPE_LEN))
+            g_eventTypePatched = true;
+        else
+            logf("event type guard: signature mismatch or unreadable — NOT patched");
     }
-    if (!writeCode(addr, PATCH_EVENTTYPE, EVENTTYPE_LEN)) return false;
-    g_eventTypePatched = true;
-    logf(">>> #105 EVENT TYPE GUARD: ARMED. An event-feed entry with no property bag reports no "
-         "EventType instead of crashing this client.");
-    return true;
+    if (!g_site50Patched) {
+        if (patchInPlace(RVA_SITE50_TAIL, EXPECT_SITE50, PATCH_SITE50, SITE50_LEN))
+            g_site50Patched = true;
+        else
+            logf("event-feed bag guard +0x50: signature mismatch or unreadable — NOT patched");
+    }
+    if (!g_site48Patched) {
+        if (patchSite48()) g_site48Patched = true;
+        else logf("event-feed bag guard +0x48: signature mismatch or unreadable — NOT patched");
+    }
+    if (g_eventTypePatched && g_site50Patched && g_site48Patched)
+        logf(">>> #105 EVENT-FEED BAG GUARDS: ARMED (EventType, +0x50, +0x48). An event-feed entry "
+             "with no property bag reports nothing instead of crashing this client.");
+    return g_eventTypePatched && g_site50Patched && g_site48Patched;
 }
 
 void unpatchEventTypeGuard()
 {
-    if (!g_eventTypePatched) return;
-    if (writeCode(g_base + RVA_EVENTTYPE_TAIL, EXPECT_EVENTTYPE, EVENTTYPE_LEN))
+    if (g_eventTypePatched && writeCode(g_base + RVA_EVENTTYPE_TAIL, EXPECT_EVENTTYPE, EVENTTYPE_LEN))
         g_eventTypePatched = false;
+    if (g_site50Patched && writeCode(g_base + RVA_SITE50_TAIL, EXPECT_SITE50, SITE50_LEN))
+        g_site50Patched = false;
+    // The stub page stays mapped: a getter already inside the redirected CALL may return into it.
+    if (g_site48Patched && writeCode(g_base + RVA_SITE48_CALL, g_site48Orig, 5))
+        g_site48Patched = false;
 }
 
 #ifndef TW3K_RELEASE

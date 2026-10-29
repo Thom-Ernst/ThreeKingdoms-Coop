@@ -8,6 +8,8 @@
 #include <stdexcept>
 uintptr_t g_base=0;
 void logf(const char*,...) {}
+// #105 side-table fallback; the October fixture predates it, so it answers no.
+bool eventSideAnswersRead(uintptr_t,uintptr_t) { return false; }
 static std::map<uintptr_t,uint8_t> memory;
 static uintptr_t denied=0;
 static size_t reads=0;
